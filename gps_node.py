@@ -22,7 +22,7 @@ class GPS(Node):
         set_msg = UBXMessage('CFG', 'CFG-RATE', 1, measRate=200, navRate=1, timeRef=0)
         self.stream.write(set_msg.serialize())
 
-        # הגדרת חיבור הרשת ללפטופ (רשת 10 הנקייה של האנטנות שלכם!)
+        # Network connection setup to laptop (clean antenna network)
         self.laptop_ip = '10.0.0.1'
         self.udp_port = 14401
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -39,10 +39,10 @@ class GPS(Node):
                 alt = msg.height / 1000.0
                 fix = msg.fixType
                 
-                # פרסום ל-ROS2
+                # Publish to ROS2
                 self.publisher_.publish(Float32MultiArray(data=[fix, lat, lon, alt]))
 
-                # --- המרה מ-UBX ל-NMEA עבור QGC ---
+                # --- Convert UBX to NMEA for QGC ---
                 lat_deg = abs(lat)
                 lon_deg = abs(lon)
                 
@@ -60,7 +60,7 @@ class GPS(Node):
                 
                 full_nmea = f"${nmea_sentence}*{checksum:02X}\r\n"
                 
-                # שליחה חלקה באוויר דרך האנטנות ישירות לפורט 14401 בלפטופ
+                # Forward to port 14401 on laptop via antennas
                 self.sock.sendto(full_nmea.encode('ascii'), (self.laptop_ip, self.udp_port))
 
         except Exception as e:

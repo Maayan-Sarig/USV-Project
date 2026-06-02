@@ -5,14 +5,14 @@ import socket
 from pymavlink import mavutil
 
 gps_port = '/dev/ttyACM0'
-laptop_ip = '192.168.2.1' # כתובת ה-IPv4 של הלפטופ
-udp_port = 14550          # הפורט של QGC
+laptop_ip = '192.168.2.1' # Laptop IPv4 address
+udp_port = 14550          # QGC port
 
 try:
     stream_gps = serial.Serial(gps_port, baudrate=9600, timeout=1)
     ubr = UBXReader(stream_gps, quitonerror=0)
     
-    # חיבור MAVLink ישיר אל הלפטופ
+    # Direct MAVLink connection to laptop
     mav_conn = mavutil.mavlink_connection(f'udpout:{laptop_ip}:{udp_port}', source_system=1, source_component=220)
     
     print(f"Injecting HIL_GPS MAVLink packets directly to {laptop_ip}:{udp_port}...")
@@ -26,7 +26,7 @@ try:
             fix = msg.fixType
             satellites = msg.numSV
             
-            # תיקון המעלות המוכח לבאר שבע
+            # Proven latitude correction for Beersheba
             if abs(lat_raw) < 1.0:
                 lat_deg = lat_raw * 1e7
                 lon_deg = lon_raw * 1e7
@@ -37,7 +37,7 @@ try:
             lat_int = int(lat_deg * 1e7)
             lon_int = int(lon_deg * 1e7)
             
-            # בניית הודעת HIL_GPS 
+            # Build HIL_GPS message
             hil_msg = mav_conn.mav.hil_gps_encode(
                 time_usec=int(time.time() * 1000000), 
                 fix_type=fix,                         
@@ -52,7 +52,7 @@ try:
                 satellites_visible=satellites         
             )
             
-            # שימוש ב-write() במקום send() כדי להתאים פיקס לגרסת ה-API שלך
+            # Use write() instead of send() for API compatibility
             mav_conn.write(hil_msg.pack(mav_conn.mav))
             
 except Exception as e:

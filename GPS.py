@@ -28,13 +28,13 @@ class GPS(Node):
         try:
             raw_data, msg = self.ubr.read()
             if msg and hasattr(msg, 'identity') and msg.identity == 'NAV-PVT':
-                # חלוקה ב-10000000.0 כדי להפוך מספר שלם ענק למעלות גיאוגרפיות תקניות
+                # Divide by 10000000.0 to convert raw integer to standard degrees
                 lat = msg.lat / 10000000.0
                 lon = msg.lon / 10000000.0
                 alt = msg.height / 1000.0
                 fix = msg.fixType
                 
-                # פרסום הנתונים לטופיק ה-ROS2
+                # Publish data to ROS2 topic
                 self.publisher_.publish(Float32MultiArray(data=[float(fix), float(lat), float(lon), float(alt)]))
 
         except Exception as e:

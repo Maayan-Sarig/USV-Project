@@ -12,7 +12,7 @@ try:
         if msg and hasattr(msg, 'identity') and msg.identity == 'NAV-PVT':
             lat = msg.lat / 1e7
             lon = msg.lon / 1e7
-            fix = msg.fixType # 0=אין, 1=בחיפוש, 3=נעילה תלת מימדית טובה
+            fix = msg.fixType # 0=None, 1=Searching, 3=Good 3D lock
             satellites = msg.numSV
             
             print(f"Fix Type: {fix} | Satellites: {satellites} | Lat: {lat} | Lon: {lon}")

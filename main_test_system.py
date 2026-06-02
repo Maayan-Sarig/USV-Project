@@ -3,22 +3,22 @@ import time
 import threading
 
 # ==========================================
-# הגדרות פינים (BCM)
+# GPIO Pin Definitions (BCM)
 # ==========================================
-# 1. מנוע כננת (iSV57T)
-PUL_PIN = 18  # פין פיזי 12
-DIR_PIN = 25  # פין פיזי 22
+# 1. Stepper motor (iSV57T)
+PUL_PIN = 18  # Physical pin 12
+DIR_PIN = 25  # Physical pin 22
 
-# 2. חיישן עומס / מתיחות כבל (HX711)
-DT_PIN  = 22  # פין פיזי 15
-SCK_PIN = 27  # פין פיזי 13
+# 2. Load cell / cable tension sensor (HX711)
+DT_PIN  = 22  # Physical pin 15
+SCK_PIN = 27  # Physical pin 13
 
-# 3. אנקודר מיקום (AMT112S-V)
-A_PIN = 24    # פין פיזי 18
-B_PIN = 23    # פין פיזי 16
+# 3. Position encoder (AMT112S-V)
+A_PIN = 24    # Physical pin 18
+B_PIN = 23    # Physical pin 16
 
 # ==========================================
-# משתנים גלובליים
+# Global variables
 # ==========================================
 current_tension = 0
 encoder_position = 0
@@ -28,27 +28,27 @@ pwm = None
 def setup():
     GPIO.setmode(GPIO.BCM)
     
-    # --- הגדרות מנוע ---
+    # --- Motor settings ---
     GPIO.setup(PUL_PIN, GPIO.OUT)
     GPIO.setup(DIR_PIN, GPIO.OUT)
     global pwm
-    pwm = GPIO.PWM(PUL_PIN, 200) # תדר התחלתי
+    pwm = GPIO.PWM(PUL_PIN, 200) # Initial frequency
     
-    # --- הגדרות HX711 ---
+    # --- HX711 settings ---
     GPIO.setup(DT_PIN, GPIO.IN)
     GPIO.setup(SCK_PIN, GPIO.OUT)
     GPIO.output(SCK_PIN, False)
     
-    # --- הגדרות אנקודר (כולל Pull-up פנימי) ---
+    # --- Encoder settings (with internal pull-up) ---
     GPIO.setup(A_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
     GPIO.setup(B_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
     
-    # רישום פסיקות חומרה לאנקודר (עובד ברקע בצורה אסינכרונית)
+    # Register hardware interrupts for encoder (runs asynchronously in background)
     GPIO.add_event_detect(A_PIN, GPIO.BOTH, callback=update_encoder_position)
     GPIO.add_event_detect(B_PIN, GPIO.BOTH, callback=update_encoder_position)
 
 # ==========================================
-# רכיב 1: לוגיקת האנקודר (מבוסס פסיקות)
+# Component 1: Encoder logic (interrupt-driven)
 # ==========================================
 def update_encoder_position(channel):
     global encoder_position
@@ -66,7 +66,7 @@ def update_encoder_position(channel):
             encoder_position -= 1
 
 # ==========================================
-# רכיב 2: לוגיקת תא עומס (HX711) - רץ בתהליכון רקע
+# Component 2: Load cell logic (HX711) – runs in background thread
 # ==========================================
 def read_hx711_raw():
     timeout = time.time() + 1.0
@@ -97,10 +97,10 @@ def load_cell_monitor():
         time.sleep(0.05)
 
 # ==========================================
-# רכיב 3: בקרת תנועה (חזית) ותצוגת נתונים
+# Component 3: Motion control and data display
 # ==========================================
 def execute_motion(direction, duration):
-    """ מפעיל את המנוע ומציג את נתוני האנקודר והמתיחות בזמן אמת """
+    """Control motor and display encoder/tension data in real-time."""
     current_freq = 200
     target_freq = 4000
     step = 200
@@ -110,65 +110,65 @@ def execute_motion(direction, duration):
     pwm.start(50)
     pwm.ChangeFrequency(current_freq)
     
-    # 1. שלב ההאצה
+    # 1. Acceleration phase
     while current_freq < target_freq:
         current_freq += step
         pwm.ChangeFrequency(current_freq)
-        print(f"מאיץ...  | תדר: {current_freq:4}Hz | מתח כבל (Raw): {current_tension:>9} | מיקום אנקודר: {encoder_position:>6} ticks", end='\r')
+        print(f"Accelerating... | Frequency: {current_freq:4}Hz | Cable tension (Raw): {current_tension:>9} | Encoder position: {encoder_position:>6} ticks", end='\r')
         time.sleep(delay)
         
-    # 2. שלב השיוט (דגימה רציפה למשך הזמן שהוגדר)
+    # 2. Cruise phase (continuous sampling for specified duration)
     end_time = time.time() + duration
     while time.time() < end_time:
-        print(f"שיוט...  | תדר: {current_freq:4}Hz | מתח כבל (Raw): {current_tension:>9} | מיקום אנקודר: {encoder_position:>6} ticks", end='\r')
+        print(f"Cruising...  | Frequency: {current_freq:4}Hz | Cable tension (Raw): {current_tension:>9} | Encoder position: {encoder_position:>6} ticks", end='\r')
         time.sleep(0.1)
         
-    # 3. שלב ההאטה
+    # 3. Deceleration phase
     while current_freq > 200:
         current_freq -= step
         pwm.ChangeFrequency(current_freq)
-        print(f"מאט...   | תדר: {current_freq:4}Hz | מתח כבל (Raw): {current_tension:>9} | מיקום אנקודר: {encoder_position:>6} ticks", end='\r')
+        print(f"Decelerating... | Frequency: {current_freq:4}Hz | Cable tension (Raw): {current_tension:>9} | Encoder position: {encoder_position:>6} ticks", end='\r')
         time.sleep(delay)
         
     pwm.stop()
-    print(f"\nעצירה זמנית בוצעה. מיקום סופי זמני: {encoder_position} ticks")
+    print(f"\nTemporary stop executed. Temporary final position: {encoder_position} ticks")
 
 def main():
     global keep_reading
     try:
-        print("=== תחילת טסט מערכת משולב מלא ===")
-        print("מפעיל חיישנים ומאפס מערכות...")
+        print("=== Starting integrated system test ===")
+        print("Initialize sensors and reset systems...")
         
-        # הפעלת תהליכון ה-HX711 ברקע
+        # Start HX711 background thread
         sensor_thread = threading.Thread(target=load_cell_monitor)
-        sensor_thread.setDaemon(True) # מבטיח שהתהליכון ייסגר אם התוכנית הראשית קורסת
+        sensor_thread.setDaemon(True) # Ensures thread closes on shutdown
         sensor_thread.start()
         
-        time.sleep(0.5) # זמן התייצבות
+        time.sleep(0.5) # Stabilization time
         
-        # הרצת כיוון 1 לשנייה (לשם בדיקה מהירה ובטוחה של 5 שניות)
-        print("\n>>> מריץ תנועה בכיוון 1 (HIGH) ל-5 שניות <<<")
+        # Run direction 1 (quick 5-second safe test)
+        print("\n>>> Running motion direction 1 (HIGH) for 5 seconds <<<")
         execute_motion(GPIO.HIGH, 5)
         
-        print("\nהמתנה של 2 שניות...")
+        print("\nWaiting 2 seconds...")
         time.sleep(2)
         
-        # הרצת כיוון 2 (חזרה)
-        print("\n>>> מריץ תנועה בכיוון 2 (LOW) ל-5 שניות <<<")
+        # Run direction 2 (reverse)
+        print("\n>>> Running motion direction 2 (LOW) for 5 seconds <<<")
         execute_motion(GPIO.LOW, 5)
         
-        print("\n[V] הטסט המשולב הסתיים בהצלחה!")
-        print(f"מיקום אנקודר סופי בהחלט: {encoder_position} ticks")
+        print("\n[✓] Integrated test completed successfully!")
+        print(f"Final encoder position: {encoder_position} ticks")
 
     except KeyboardInterrupt:
-        print("\n[!] עצירת חירום הופעלה על ידי המשתמש!")
+        print("\n[!] Emergency stop triggered by user!")
         if pwm:
             pwm.stop()
     finally:
         keep_reading = False
         time.sleep(0.2)
         GPIO.cleanup()
-        print("GPIO נוקה בהצלחה. מערכת מאובטחת.")
+        print("GPIO cleaned up successfully. System secured.")
 
 if __name__ == '__main__':
     setup()

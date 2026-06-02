@@ -53,13 +53,13 @@ class IMU(Node):
         self.estimated_y = 0.0
 
     def gps_callback(self, msg):
-        # קריאת האינדקסים מתוך המערך ששודר ב-GPS.py
+        # Read indices from array published by GPS.py
         fix = msg.data[0]
         lat = msg.data[1]
         lon = msg.data[2]
         alt = msg.data[3]
 
-        # עדכון אך ורק אם יש קליטה אמיתית (Fix 3 או 4) והנתון אינו אפס
+        # Update only if valid GPS fix (3 or 4) and data is non-zero
         if fix < 3 or lat == 0.0:
             return
 
@@ -77,7 +77,7 @@ class IMU(Node):
             delta_lon = lon - self.initial_lon
             
             self.gps_y = delta_lat * self.meters_per_deg_lat
-            # התיקון הקריטי: קוסינוס של קו הרוחב (lat) במעלות רדיאניות
+            # Critical correction: cosine of latitude (in radians)
             self.gps_x = delta_lon * self.meters_per_deg_lon * math.cos(math.radians(lat))
             self.new_gps_available = True
 
