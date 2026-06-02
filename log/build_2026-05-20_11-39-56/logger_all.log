@@ -1,0 +1,648 @@
+[6.032s] DEBUG:colcon:Command line arguments: ['/usr/bin/colcon', 'build', '--symlink-install']
+[6.033s] DEBUG:colcon:Parsed command line arguments: Namespace(allow_overriding=[], ament_cmake_args=None, base_paths=['.'], build_base='build', catkin_cmake_args=None, catkin_skip_building_tests=False, cmake_args=None, cmake_clean_cache=False, cmake_clean_first=False, cmake_force_configure=False, cmake_target=None, cmake_target_skip_unavailable=False, continue_on_error=False, event_handlers=None, executor='parallel', ignore_user_meta=False, install_base='install', log_base=None, log_level=None, main=<bound method BuildVerb.main of <colcon_core.verb.build.BuildVerb object at 0xffffb0fce490>>, merge_install=False, metas=['./colcon.meta'], mixin=None, mixin_files=None, mixin_verb=('build',), packages_above=None, packages_above_and_dependencies=None, packages_above_depth=None, packages_end=None, packages_ignore=None, packages_ignore_regex=None, packages_select=None, packages_select_build_failed=False, packages_select_by_dep=None, packages_select_regex=None, packages_select_test_failures=False, packages_skip=None, packages_skip_build_finished=False, packages_skip_by_dep=None, packages_skip_regex=None, packages_skip_test_passed=False, packages_skip_up_to=None, packages_start=None, packages_up_to=None, packages_up_to_regex=None, parallel_workers=4, paths=None, symlink_install=True, test_result_base=None, verb_extension=<colcon_core.verb.build.BuildVerb object at 0xffffb0fce490>, verb_name='build', verb_parser=<colcon_mixin.mixin.mixin_argument.MixinArgumentDecorator object at 0xffffb0f23af0>)
+[8.635s] Level 1:colcon.colcon_core.package_discovery:discover_packages(colcon_meta) check parameters
+[8.636s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) check parameters
+[8.637s] Level 1:colcon.colcon_core.package_discovery:discover_packages(ignore) check parameters
+[8.638s] Level 1:colcon.colcon_core.package_discovery:discover_packages(path) check parameters
+[8.638s] Level 1:colcon.colcon_core.package_discovery:discover_packages(colcon_meta) discover
+[8.638s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) discover
+[8.639s] INFO:colcon.colcon_core.package_discovery:Crawling recursively for packages in '/home/lar/USV'
+[8.640s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['ignore', 'ignore_ament_install']
+[8.640s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'ignore'
+[8.641s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'ignore_ament_install'
+[8.641s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['colcon_pkg']
+[8.642s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'colcon_pkg'
+[8.642s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['colcon_meta']
+[8.642s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'colcon_meta'
+[8.642s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['ros']
+[8.643s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'ros'
+[8.718s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['cmake', 'python']
+[8.718s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'cmake'
+[8.719s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'python'
+[8.719s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['python_setup_py']
+[8.719s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'python_setup_py'
+[8.720s] Level 1:colcon.colcon_core.package_identification:_identify(__pycache__) by extensions ['ignore', 'ignore_ament_install']
+[8.720s] Level 1:colcon.colcon_core.package_identification:_identify(__pycache__) by extension 'ignore'
+[8.721s] Level 1:colcon.colcon_core.package_identification:_identify(__pycache__) by extension 'ignore_ament_install'
+[8.721s] Level 1:colcon.colcon_core.package_identification:_identify(__pycache__) by extensions ['colcon_pkg']
+[8.721s] Level 1:colcon.colcon_core.package_identification:_identify(__pycache__) by extension 'colcon_pkg'
+[8.721s] Level 1:colcon.colcon_core.package_identification:_identify(__pycache__) by extensions ['colcon_meta']
+[8.722s] Level 1:colcon.colcon_core.package_identification:_identify(__pycache__) by extension 'colcon_meta'
+[8.722s] Level 1:colcon.colcon_core.package_identification:_identify(__pycache__) by extensions ['ros']
+[8.722s] Level 1:colcon.colcon_core.package_identification:_identify(__pycache__) by extension 'ros'
+[8.723s] Level 1:colcon.colcon_core.package_identification:_identify(__pycache__) by extensions ['cmake', 'python']
+[8.723s] Level 1:colcon.colcon_core.package_identification:_identify(__pycache__) by extension 'cmake'
+[8.723s] Level 1:colcon.colcon_core.package_identification:_identify(__pycache__) by extension 'python'
+[8.723s] Level 1:colcon.colcon_core.package_identification:_identify(__pycache__) by extensions ['python_setup_py']
+[8.724s] Level 1:colcon.colcon_core.package_identification:_identify(__pycache__) by extension 'python_setup_py'
+[8.725s] Level 1:colcon.colcon_core.package_identification:_identify(build) by extensions ['ignore', 'ignore_ament_install']
+[8.725s] Level 1:colcon.colcon_core.package_identification:_identify(build) by extension 'ignore'
+[8.726s] Level 1:colcon.colcon_core.package_identification:_identify(build) ignored
+[8.727s] Level 1:colcon.colcon_core.package_identification:_identify(install) by extensions ['ignore', 'ignore_ament_install']
+[8.727s] Level 1:colcon.colcon_core.package_identification:_identify(install) by extension 'ignore'
+[8.728s] Level 1:colcon.colcon_core.package_identification:_identify(install) ignored
+[8.729s] Level 1:colcon.colcon_core.package_identification:_identify(log) by extensions ['ignore', 'ignore_ament_install']
+[8.730s] Level 1:colcon.colcon_core.package_identification:_identify(log) by extension 'ignore'
+[8.730s] Level 1:colcon.colcon_core.package_identification:_identify(log) ignored
+[8.731s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router) by extensions ['ignore', 'ignore_ament_install']
+[8.732s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router) by extension 'ignore'
+[8.733s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router) by extension 'ignore_ament_install'
+[8.733s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router) by extensions ['colcon_pkg']
+[8.733s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router) by extension 'colcon_pkg'
+[8.734s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router) by extensions ['colcon_meta']
+[8.734s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router) by extension 'colcon_meta'
+[8.734s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router) by extensions ['ros']
+[8.734s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router) by extension 'ros'
+[8.735s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router) by extensions ['cmake', 'python']
+[8.735s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router) by extension 'cmake'
+[8.735s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router) by extension 'python'
+[8.736s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router) by extensions ['python_setup_py']
+[8.736s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router) by extension 'python_setup_py'
+[8.736s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build) by extensions ['ignore', 'ignore_ament_install']
+[8.737s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build) by extension 'ignore'
+[8.737s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build) by extension 'ignore_ament_install'
+[8.737s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build) by extensions ['colcon_pkg']
+[8.737s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build) by extension 'colcon_pkg'
+[8.737s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build) by extensions ['colcon_meta']
+[8.738s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build) by extension 'colcon_meta'
+[8.738s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build) by extensions ['ros']
+[8.738s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build) by extension 'ros'
+[8.738s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build) by extensions ['cmake', 'python']
+[8.738s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build) by extension 'cmake'
+[8.739s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build) by extension 'python'
+[8.739s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build) by extensions ['python_setup_py']
+[8.739s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build) by extension 'python_setup_py'
+[8.739s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/examples) by extensions ['ignore', 'ignore_ament_install']
+[8.740s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/examples) by extension 'ignore'
+[8.740s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/examples) by extension 'ignore_ament_install'
+[8.740s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/examples) by extensions ['colcon_pkg']
+[8.740s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/examples) by extension 'colcon_pkg'
+[8.740s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/examples) by extensions ['colcon_meta']
+[8.740s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/examples) by extension 'colcon_meta'
+[8.741s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/examples) by extensions ['ros']
+[8.741s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/examples) by extension 'ros'
+[8.741s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/examples) by extensions ['cmake', 'python']
+[8.741s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/examples) by extension 'cmake'
+[8.742s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/examples) by extension 'python'
+[8.742s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/examples) by extensions ['python_setup_py']
+[8.742s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/examples) by extension 'python_setup_py'
+[8.743s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/examples/arm-authorizer.p) by extensions ['ignore', 'ignore_ament_install']
+[8.743s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/examples/arm-authorizer.p) by extension 'ignore'
+[8.743s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/examples/arm-authorizer.p) by extension 'ignore_ament_install'
+[8.744s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/examples/arm-authorizer.p) by extensions ['colcon_pkg']
+[8.744s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/examples/arm-authorizer.p) by extension 'colcon_pkg'
+[8.744s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/examples/arm-authorizer.p) by extensions ['colcon_meta']
+[8.744s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/examples/arm-authorizer.p) by extension 'colcon_meta'
+[8.744s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/examples/arm-authorizer.p) by extensions ['ros']
+[8.745s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/examples/arm-authorizer.p) by extension 'ros'
+[8.745s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/examples/arm-authorizer.p) by extensions ['cmake', 'python']
+[8.745s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/examples/arm-authorizer.p) by extension 'cmake'
+[8.746s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/examples/arm-authorizer.p) by extension 'python'
+[8.746s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/examples/arm-authorizer.p) by extensions ['python_setup_py']
+[8.746s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/examples/arm-authorizer.p) by extension 'python_setup_py'
+[8.747s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/examples/heartbeat-print.p) by extensions ['ignore', 'ignore_ament_install']
+[8.747s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/examples/heartbeat-print.p) by extension 'ignore'
+[8.747s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/examples/heartbeat-print.p) by extension 'ignore_ament_install'
+[8.748s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/examples/heartbeat-print.p) by extensions ['colcon_pkg']
+[8.748s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/examples/heartbeat-print.p) by extension 'colcon_pkg'
+[8.748s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/examples/heartbeat-print.p) by extensions ['colcon_meta']
+[8.748s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/examples/heartbeat-print.p) by extension 'colcon_meta'
+[8.749s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/examples/heartbeat-print.p) by extensions ['ros']
+[8.749s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/examples/heartbeat-print.p) by extension 'ros'
+[8.749s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/examples/heartbeat-print.p) by extensions ['cmake', 'python']
+[8.749s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/examples/heartbeat-print.p) by extension 'cmake'
+[8.750s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/examples/heartbeat-print.p) by extension 'python'
+[8.750s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/examples/heartbeat-print.p) by extensions ['python_setup_py']
+[8.750s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/examples/heartbeat-print.p) by extension 'python_setup_py'
+[8.751s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/examples/px4-offboard-mode.p) by extensions ['ignore', 'ignore_ament_install']
+[8.751s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/examples/px4-offboard-mode.p) by extension 'ignore'
+[8.751s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/examples/px4-offboard-mode.p) by extension 'ignore_ament_install'
+[8.752s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/examples/px4-offboard-mode.p) by extensions ['colcon_pkg']
+[8.752s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/examples/px4-offboard-mode.p) by extension 'colcon_pkg'
+[8.752s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/examples/px4-offboard-mode.p) by extensions ['colcon_meta']
+[8.752s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/examples/px4-offboard-mode.p) by extension 'colcon_meta'
+[8.753s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/examples/px4-offboard-mode.p) by extensions ['ros']
+[8.753s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/examples/px4-offboard-mode.p) by extension 'ros'
+[8.753s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/examples/px4-offboard-mode.p) by extensions ['cmake', 'python']
+[8.754s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/examples/px4-offboard-mode.p) by extension 'cmake'
+[8.754s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/examples/px4-offboard-mode.p) by extension 'python'
+[8.754s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/examples/px4-offboard-mode.p) by extensions ['python_setup_py']
+[8.754s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/examples/px4-offboard-mode.p) by extension 'python_setup_py'
+[8.755s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/meson-info) by extensions ['ignore', 'ignore_ament_install']
+[8.755s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/meson-info) by extension 'ignore'
+[8.756s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/meson-info) by extension 'ignore_ament_install'
+[8.756s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/meson-info) by extensions ['colcon_pkg']
+[8.756s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/meson-info) by extension 'colcon_pkg'
+[8.756s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/meson-info) by extensions ['colcon_meta']
+[8.757s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/meson-info) by extension 'colcon_meta'
+[8.757s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/meson-info) by extensions ['ros']
+[8.757s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/meson-info) by extension 'ros'
+[8.758s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/meson-info) by extensions ['cmake', 'python']
+[8.758s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/meson-info) by extension 'cmake'
+[8.758s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/meson-info) by extension 'python'
+[8.758s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/meson-info) by extensions ['python_setup_py']
+[8.759s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/meson-info) by extension 'python_setup_py'
+[8.759s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/meson-logs) by extensions ['ignore', 'ignore_ament_install']
+[8.760s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/meson-logs) by extension 'ignore'
+[8.760s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/meson-logs) by extension 'ignore_ament_install'
+[8.760s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/meson-logs) by extensions ['colcon_pkg']
+[8.761s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/meson-logs) by extension 'colcon_pkg'
+[8.761s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/meson-logs) by extensions ['colcon_meta']
+[8.761s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/meson-logs) by extension 'colcon_meta'
+[8.761s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/meson-logs) by extensions ['ros']
+[8.762s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/meson-logs) by extension 'ros'
+[8.762s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/meson-logs) by extensions ['cmake', 'python']
+[8.762s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/meson-logs) by extension 'cmake'
+[8.763s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/meson-logs) by extension 'python'
+[8.763s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/meson-logs) by extensions ['python_setup_py']
+[8.763s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/meson-logs) by extension 'python_setup_py'
+[8.764s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/meson-private) by extensions ['ignore', 'ignore_ament_install']
+[8.764s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/meson-private) by extension 'ignore'
+[8.765s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/meson-private) by extension 'ignore_ament_install'
+[8.765s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/meson-private) by extensions ['colcon_pkg']
+[8.765s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/meson-private) by extension 'colcon_pkg'
+[8.765s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/meson-private) by extensions ['colcon_meta']
+[8.765s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/meson-private) by extension 'colcon_meta'
+[8.766s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/meson-private) by extensions ['ros']
+[8.766s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/meson-private) by extension 'ros'
+[8.767s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/meson-private) by extensions ['cmake', 'python']
+[8.767s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/meson-private) by extension 'cmake'
+[8.767s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/meson-private) by extension 'python'
+[8.768s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/meson-private) by extensions ['python_setup_py']
+[8.768s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/meson-private) by extension 'python_setup_py'
+[8.769s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src) by extensions ['ignore', 'ignore_ament_install']
+[8.770s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src) by extension 'ignore'
+[8.771s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src) by extension 'ignore_ament_install'
+[8.771s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src) by extensions ['colcon_pkg']
+[8.772s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src) by extension 'colcon_pkg'
+[8.772s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src) by extensions ['colcon_meta']
+[8.773s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src) by extension 'colcon_meta'
+[8.773s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src) by extensions ['ros']
+[8.773s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src) by extension 'ros'
+[8.774s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src) by extensions ['cmake', 'python']
+[8.774s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src) by extension 'cmake'
+[8.775s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src) by extension 'python'
+[8.775s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src) by extensions ['python_setup_py']
+[8.775s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src) by extension 'python_setup_py'
+[8.776s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src/common) by extensions ['ignore', 'ignore_ament_install']
+[8.776s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src/common) by extension 'ignore'
+[8.776s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src/common) by extension 'ignore_ament_install'
+[8.777s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src/common) by extensions ['colcon_pkg']
+[8.777s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src/common) by extension 'colcon_pkg'
+[8.777s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src/common) by extensions ['colcon_meta']
+[8.777s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src/common) by extension 'colcon_meta'
+[8.777s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src/common) by extensions ['ros']
+[8.778s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src/common) by extension 'ros'
+[8.778s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src/common) by extensions ['cmake', 'python']
+[8.778s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src/common) by extension 'cmake'
+[8.779s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src/common) by extension 'python'
+[8.779s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src/common) by extensions ['python_setup_py']
+[8.779s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src/common) by extension 'python_setup_py'
+[8.780s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src/common/libcommon-private.a.p) by extensions ['ignore', 'ignore_ament_install']
+[8.780s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src/common/libcommon-private.a.p) by extension 'ignore'
+[8.781s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src/common/libcommon-private.a.p) by extension 'ignore_ament_install'
+[8.781s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src/common/libcommon-private.a.p) by extensions ['colcon_pkg']
+[8.781s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src/common/libcommon-private.a.p) by extension 'colcon_pkg'
+[8.781s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src/common/libcommon-private.a.p) by extensions ['colcon_meta']
+[8.782s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src/common/libcommon-private.a.p) by extension 'colcon_meta'
+[8.782s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src/common/libcommon-private.a.p) by extensions ['ros']
+[8.782s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src/common/libcommon-private.a.p) by extension 'ros'
+[8.783s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src/common/libcommon-private.a.p) by extensions ['cmake', 'python']
+[8.783s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src/common/libcommon-private.a.p) by extension 'cmake'
+[8.783s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src/common/libcommon-private.a.p) by extension 'python'
+[8.784s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src/common/libcommon-private.a.p) by extensions ['python_setup_py']
+[8.784s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src/common/libcommon-private.a.p) by extension 'python_setup_py'
+[8.785s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src/endpoints_test.p) by extensions ['ignore', 'ignore_ament_install']
+[8.785s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src/endpoints_test.p) by extension 'ignore'
+[8.786s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src/endpoints_test.p) by extension 'ignore_ament_install'
+[8.786s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src/endpoints_test.p) by extensions ['colcon_pkg']
+[8.786s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src/endpoints_test.p) by extension 'colcon_pkg'
+[8.786s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src/endpoints_test.p) by extensions ['colcon_meta']
+[8.787s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src/endpoints_test.p) by extension 'colcon_meta'
+[8.787s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src/endpoints_test.p) by extensions ['ros']
+[8.787s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src/endpoints_test.p) by extension 'ros'
+[8.788s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src/endpoints_test.p) by extensions ['cmake', 'python']
+[8.788s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src/endpoints_test.p) by extension 'cmake'
+[8.789s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src/endpoints_test.p) by extension 'python'
+[8.789s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src/endpoints_test.p) by extensions ['python_setup_py']
+[8.789s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src/endpoints_test.p) by extension 'python_setup_py'
+[8.790s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src/mainloop_test.p) by extensions ['ignore', 'ignore_ament_install']
+[8.791s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src/mainloop_test.p) by extension 'ignore'
+[8.792s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src/mainloop_test.p) by extension 'ignore_ament_install'
+[8.792s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src/mainloop_test.p) by extensions ['colcon_pkg']
+[8.793s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src/mainloop_test.p) by extension 'colcon_pkg'
+[8.793s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src/mainloop_test.p) by extensions ['colcon_meta']
+[8.793s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src/mainloop_test.p) by extension 'colcon_meta'
+[8.794s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src/mainloop_test.p) by extensions ['ros']
+[8.794s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src/mainloop_test.p) by extension 'ros'
+[8.796s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src/mainloop_test.p) by extensions ['cmake', 'python']
+[8.797s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src/mainloop_test.p) by extension 'cmake'
+[8.797s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src/mainloop_test.p) by extension 'python'
+[8.798s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src/mainloop_test.p) by extensions ['python_setup_py']
+[8.798s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src/mainloop_test.p) by extension 'python_setup_py'
+[8.799s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src/mavlink-routerd.p) by extensions ['ignore', 'ignore_ament_install']
+[8.800s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src/mavlink-routerd.p) by extension 'ignore'
+[8.800s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src/mavlink-routerd.p) by extension 'ignore_ament_install'
+[8.801s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src/mavlink-routerd.p) by extensions ['colcon_pkg']
+[8.801s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src/mavlink-routerd.p) by extension 'colcon_pkg'
+[8.802s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src/mavlink-routerd.p) by extensions ['colcon_meta']
+[8.802s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src/mavlink-routerd.p) by extension 'colcon_meta'
+[8.803s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src/mavlink-routerd.p) by extensions ['ros']
+[8.803s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src/mavlink-routerd.p) by extension 'ros'
+[8.804s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src/mavlink-routerd.p) by extensions ['cmake', 'python']
+[8.804s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src/mavlink-routerd.p) by extension 'cmake'
+[8.805s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src/mavlink-routerd.p) by extension 'python'
+[8.805s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src/mavlink-routerd.p) by extensions ['python_setup_py']
+[8.805s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/bin_build/src/mavlink-routerd.p) by extension 'python_setup_py'
+[8.806s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/examples) by extensions ['ignore', 'ignore_ament_install']
+[8.806s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/examples) by extension 'ignore'
+[8.806s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/examples) by extension 'ignore_ament_install'
+[8.807s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/examples) by extensions ['colcon_pkg']
+[8.807s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/examples) by extension 'colcon_pkg'
+[8.807s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/examples) by extensions ['colcon_meta']
+[8.807s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/examples) by extension 'colcon_meta'
+[8.807s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/examples) by extensions ['ros']
+[8.807s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/examples) by extension 'ros'
+[8.808s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/examples) by extensions ['cmake', 'python']
+[8.808s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/examples) by extension 'cmake'
+[8.808s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/examples) by extension 'python'
+[8.808s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/examples) by extensions ['python_setup_py']
+[8.808s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/examples) by extension 'python_setup_py'
+[8.809s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules) by extensions ['ignore', 'ignore_ament_install']
+[8.809s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules) by extension 'ignore'
+[8.809s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules) by extension 'ignore_ament_install'
+[8.809s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules) by extensions ['colcon_pkg']
+[8.810s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules) by extension 'colcon_pkg'
+[8.810s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules) by extensions ['colcon_meta']
+[8.810s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules) by extension 'colcon_meta'
+[8.810s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules) by extensions ['ros']
+[8.810s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules) by extension 'ros'
+[8.811s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules) by extensions ['cmake', 'python']
+[8.811s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules) by extension 'cmake'
+[8.811s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules) by extension 'python'
+[8.811s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules) by extensions ['python_setup_py']
+[8.811s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules) by extension 'python_setup_py'
+[8.812s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2) by extensions ['ignore', 'ignore_ament_install']
+[8.813s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2) by extension 'ignore'
+[8.813s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2) by extension 'ignore_ament_install'
+[8.814s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2) by extensions ['colcon_pkg']
+[8.814s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2) by extension 'colcon_pkg'
+[8.814s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2) by extensions ['colcon_meta']
+[8.814s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2) by extension 'colcon_meta'
+[8.814s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2) by extensions ['ros']
+[8.815s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2) by extension 'ros'
+[8.815s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2) by extensions ['cmake', 'python']
+[8.815s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2) by extension 'cmake'
+[8.815s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2) by extension 'python'
+[8.815s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2) by extensions ['python_setup_py']
+[8.816s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2) by extension 'python_setup_py'
+[8.816s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/ASLUAV) by extensions ['ignore', 'ignore_ament_install']
+[8.817s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/ASLUAV) by extension 'ignore'
+[8.817s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/ASLUAV) by extension 'ignore_ament_install'
+[8.817s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/ASLUAV) by extensions ['colcon_pkg']
+[8.817s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/ASLUAV) by extension 'colcon_pkg'
+[8.817s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/ASLUAV) by extensions ['colcon_meta']
+[8.817s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/ASLUAV) by extension 'colcon_meta'
+[8.818s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/ASLUAV) by extensions ['ros']
+[8.818s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/ASLUAV) by extension 'ros'
+[8.818s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/ASLUAV) by extensions ['cmake', 'python']
+[8.818s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/ASLUAV) by extension 'cmake'
+[8.819s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/ASLUAV) by extension 'python'
+[8.819s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/ASLUAV) by extensions ['python_setup_py']
+[8.819s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/ASLUAV) by extension 'python_setup_py'
+[8.820s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/AVSSUAS) by extensions ['ignore', 'ignore_ament_install']
+[8.820s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/AVSSUAS) by extension 'ignore'
+[8.821s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/AVSSUAS) by extension 'ignore_ament_install'
+[8.821s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/AVSSUAS) by extensions ['colcon_pkg']
+[8.822s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/AVSSUAS) by extension 'colcon_pkg'
+[8.822s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/AVSSUAS) by extensions ['colcon_meta']
+[8.822s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/AVSSUAS) by extension 'colcon_meta'
+[8.823s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/AVSSUAS) by extensions ['ros']
+[8.823s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/AVSSUAS) by extension 'ros'
+[8.824s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/AVSSUAS) by extensions ['cmake', 'python']
+[8.824s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/AVSSUAS) by extension 'cmake'
+[8.824s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/AVSSUAS) by extension 'python'
+[8.825s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/AVSSUAS) by extensions ['python_setup_py']
+[8.825s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/AVSSUAS) by extension 'python_setup_py'
+[8.826s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/all) by extensions ['ignore', 'ignore_ament_install']
+[8.826s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/all) by extension 'ignore'
+[8.827s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/all) by extension 'ignore_ament_install'
+[8.827s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/all) by extensions ['colcon_pkg']
+[8.827s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/all) by extension 'colcon_pkg'
+[8.827s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/all) by extensions ['colcon_meta']
+[8.827s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/all) by extension 'colcon_meta'
+[8.828s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/all) by extensions ['ros']
+[8.828s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/all) by extension 'ros'
+[8.828s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/all) by extensions ['cmake', 'python']
+[8.828s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/all) by extension 'cmake'
+[8.828s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/all) by extension 'python'
+[8.829s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/all) by extensions ['python_setup_py']
+[8.829s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/all) by extension 'python_setup_py'
+[8.830s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/ardupilotmega) by extensions ['ignore', 'ignore_ament_install']
+[8.830s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/ardupilotmega) by extension 'ignore'
+[8.830s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/ardupilotmega) by extension 'ignore_ament_install'
+[8.831s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/ardupilotmega) by extensions ['colcon_pkg']
+[8.831s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/ardupilotmega) by extension 'colcon_pkg'
+[8.831s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/ardupilotmega) by extensions ['colcon_meta']
+[8.831s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/ardupilotmega) by extension 'colcon_meta'
+[8.831s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/ardupilotmega) by extensions ['ros']
+[8.831s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/ardupilotmega) by extension 'ros'
+[8.832s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/ardupilotmega) by extensions ['cmake', 'python']
+[8.832s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/ardupilotmega) by extension 'cmake'
+[8.832s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/ardupilotmega) by extension 'python'
+[8.832s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/ardupilotmega) by extensions ['python_setup_py']
+[8.832s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/ardupilotmega) by extension 'python_setup_py'
+[8.835s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/common) by extensions ['ignore', 'ignore_ament_install']
+[8.836s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/common) by extension 'ignore'
+[8.836s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/common) by extension 'ignore_ament_install'
+[8.836s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/common) by extensions ['colcon_pkg']
+[8.836s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/common) by extension 'colcon_pkg'
+[8.837s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/common) by extensions ['colcon_meta']
+[8.837s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/common) by extension 'colcon_meta'
+[8.837s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/common) by extensions ['ros']
+[8.837s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/common) by extension 'ros'
+[8.837s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/common) by extensions ['cmake', 'python']
+[8.838s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/common) by extension 'cmake'
+[8.838s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/common) by extension 'python'
+[8.838s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/common) by extensions ['python_setup_py']
+[8.838s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/common) by extension 'python_setup_py'
+[8.839s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/csAirLink) by extensions ['ignore', 'ignore_ament_install']
+[8.839s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/csAirLink) by extension 'ignore'
+[8.840s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/csAirLink) by extension 'ignore_ament_install'
+[8.840s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/csAirLink) by extensions ['colcon_pkg']
+[8.840s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/csAirLink) by extension 'colcon_pkg'
+[8.841s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/csAirLink) by extensions ['colcon_meta']
+[8.841s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/csAirLink) by extension 'colcon_meta'
+[8.841s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/csAirLink) by extensions ['ros']
+[8.842s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/csAirLink) by extension 'ros'
+[8.843s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/csAirLink) by extensions ['cmake', 'python']
+[8.843s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/csAirLink) by extension 'cmake'
+[8.843s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/csAirLink) by extension 'python'
+[8.844s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/csAirLink) by extensions ['python_setup_py']
+[8.844s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/csAirLink) by extension 'python_setup_py'
+[8.845s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/cubepilot) by extensions ['ignore', 'ignore_ament_install']
+[8.845s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/cubepilot) by extension 'ignore'
+[8.846s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/cubepilot) by extension 'ignore_ament_install'
+[8.846s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/cubepilot) by extensions ['colcon_pkg']
+[8.846s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/cubepilot) by extension 'colcon_pkg'
+[8.847s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/cubepilot) by extensions ['colcon_meta']
+[8.847s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/cubepilot) by extension 'colcon_meta'
+[8.847s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/cubepilot) by extensions ['ros']
+[8.847s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/cubepilot) by extension 'ros'
+[8.848s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/cubepilot) by extensions ['cmake', 'python']
+[8.848s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/cubepilot) by extension 'cmake'
+[8.848s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/cubepilot) by extension 'python'
+[8.848s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/cubepilot) by extensions ['python_setup_py']
+[8.848s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/cubepilot) by extension 'python_setup_py'
+[8.849s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/development) by extensions ['ignore', 'ignore_ament_install']
+[8.849s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/development) by extension 'ignore'
+[8.849s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/development) by extension 'ignore_ament_install'
+[8.850s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/development) by extensions ['colcon_pkg']
+[8.850s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/development) by extension 'colcon_pkg'
+[8.850s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/development) by extensions ['colcon_meta']
+[8.850s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/development) by extension 'colcon_meta'
+[8.850s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/development) by extensions ['ros']
+[8.850s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/development) by extension 'ros'
+[8.851s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/development) by extensions ['cmake', 'python']
+[8.851s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/development) by extension 'cmake'
+[8.851s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/development) by extension 'python'
+[8.851s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/development) by extensions ['python_setup_py']
+[8.851s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/development) by extension 'python_setup_py'
+[8.852s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/icarous) by extensions ['ignore', 'ignore_ament_install']
+[8.852s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/icarous) by extension 'ignore'
+[8.853s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/icarous) by extension 'ignore_ament_install'
+[8.853s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/icarous) by extensions ['colcon_pkg']
+[8.853s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/icarous) by extension 'colcon_pkg'
+[8.853s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/icarous) by extensions ['colcon_meta']
+[8.853s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/icarous) by extension 'colcon_meta'
+[8.853s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/icarous) by extensions ['ros']
+[8.853s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/icarous) by extension 'ros'
+[8.854s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/icarous) by extensions ['cmake', 'python']
+[8.854s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/icarous) by extension 'cmake'
+[8.854s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/icarous) by extension 'python'
+[8.854s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/icarous) by extensions ['python_setup_py']
+[8.854s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/icarous) by extension 'python_setup_py'
+[8.855s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/matrixpilot) by extensions ['ignore', 'ignore_ament_install']
+[8.856s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/matrixpilot) by extension 'ignore'
+[8.856s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/matrixpilot) by extension 'ignore_ament_install'
+[8.856s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/matrixpilot) by extensions ['colcon_pkg']
+[8.856s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/matrixpilot) by extension 'colcon_pkg'
+[8.856s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/matrixpilot) by extensions ['colcon_meta']
+[8.856s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/matrixpilot) by extension 'colcon_meta'
+[8.857s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/matrixpilot) by extensions ['ros']
+[8.857s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/matrixpilot) by extension 'ros'
+[8.857s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/matrixpilot) by extensions ['cmake', 'python']
+[8.857s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/matrixpilot) by extension 'cmake'
+[8.857s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/matrixpilot) by extension 'python'
+[8.858s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/matrixpilot) by extensions ['python_setup_py']
+[8.858s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/matrixpilot) by extension 'python_setup_py'
+[8.859s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/message_definitions) by extensions ['ignore', 'ignore_ament_install']
+[8.859s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/message_definitions) by extension 'ignore'
+[8.860s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/message_definitions) by extension 'ignore_ament_install'
+[8.860s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/message_definitions) by extensions ['colcon_pkg']
+[8.861s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/message_definitions) by extension 'colcon_pkg'
+[8.861s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/message_definitions) by extensions ['colcon_meta']
+[8.862s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/message_definitions) by extension 'colcon_meta'
+[8.862s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/message_definitions) by extensions ['ros']
+[8.862s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/message_definitions) by extension 'ros'
+[8.863s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/message_definitions) by extensions ['cmake', 'python']
+[8.864s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/message_definitions) by extension 'cmake'
+[8.864s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/message_definitions) by extension 'python'
+[8.865s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/message_definitions) by extensions ['python_setup_py']
+[8.865s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/message_definitions) by extension 'python_setup_py'
+[8.865s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/minimal) by extensions ['ignore', 'ignore_ament_install']
+[8.866s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/minimal) by extension 'ignore'
+[8.867s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/minimal) by extension 'ignore_ament_install'
+[8.867s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/minimal) by extensions ['colcon_pkg']
+[8.867s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/minimal) by extension 'colcon_pkg'
+[8.867s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/minimal) by extensions ['colcon_meta']
+[8.868s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/minimal) by extension 'colcon_meta'
+[8.868s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/minimal) by extensions ['ros']
+[8.868s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/minimal) by extension 'ros'
+[8.869s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/minimal) by extensions ['cmake', 'python']
+[8.869s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/minimal) by extension 'cmake'
+[8.869s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/minimal) by extension 'python'
+[8.869s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/minimal) by extensions ['python_setup_py']
+[8.869s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/minimal) by extension 'python_setup_py'
+[8.870s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/paparazzi) by extensions ['ignore', 'ignore_ament_install']
+[8.870s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/paparazzi) by extension 'ignore'
+[8.871s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/paparazzi) by extension 'ignore_ament_install'
+[8.871s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/paparazzi) by extensions ['colcon_pkg']
+[8.871s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/paparazzi) by extension 'colcon_pkg'
+[8.871s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/paparazzi) by extensions ['colcon_meta']
+[8.871s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/paparazzi) by extension 'colcon_meta'
+[8.871s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/paparazzi) by extensions ['ros']
+[8.872s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/paparazzi) by extension 'ros'
+[8.872s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/paparazzi) by extensions ['cmake', 'python']
+[8.872s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/paparazzi) by extension 'cmake'
+[8.872s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/paparazzi) by extension 'python'
+[8.872s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/paparazzi) by extensions ['python_setup_py']
+[8.872s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/paparazzi) by extension 'python_setup_py'
+[8.873s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/python_array_test) by extensions ['ignore', 'ignore_ament_install']
+[8.873s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/python_array_test) by extension 'ignore'
+[8.874s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/python_array_test) by extension 'ignore_ament_install'
+[8.874s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/python_array_test) by extensions ['colcon_pkg']
+[8.874s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/python_array_test) by extension 'colcon_pkg'
+[8.875s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/python_array_test) by extensions ['colcon_meta']
+[8.875s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/python_array_test) by extension 'colcon_meta'
+[8.875s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/python_array_test) by extensions ['ros']
+[8.875s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/python_array_test) by extension 'ros'
+[8.876s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/python_array_test) by extensions ['cmake', 'python']
+[8.876s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/python_array_test) by extension 'cmake'
+[8.876s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/python_array_test) by extension 'python'
+[8.877s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/python_array_test) by extensions ['python_setup_py']
+[8.877s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/python_array_test) by extension 'python_setup_py'
+[8.878s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/standard) by extensions ['ignore', 'ignore_ament_install']
+[8.878s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/standard) by extension 'ignore'
+[8.879s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/standard) by extension 'ignore_ament_install'
+[8.879s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/standard) by extensions ['colcon_pkg']
+[8.880s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/standard) by extension 'colcon_pkg'
+[8.880s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/standard) by extensions ['colcon_meta']
+[8.880s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/standard) by extension 'colcon_meta'
+[8.881s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/standard) by extensions ['ros']
+[8.881s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/standard) by extension 'ros'
+[8.882s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/standard) by extensions ['cmake', 'python']
+[8.882s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/standard) by extension 'cmake'
+[8.882s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/standard) by extension 'python'
+[8.883s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/standard) by extensions ['python_setup_py']
+[8.883s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/standard) by extension 'python_setup_py'
+[8.884s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/storm32) by extensions ['ignore', 'ignore_ament_install']
+[8.884s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/storm32) by extension 'ignore'
+[8.884s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/storm32) by extension 'ignore_ament_install'
+[8.885s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/storm32) by extensions ['colcon_pkg']
+[8.885s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/storm32) by extension 'colcon_pkg'
+[8.885s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/storm32) by extensions ['colcon_meta']
+[8.885s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/storm32) by extension 'colcon_meta'
+[8.885s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/storm32) by extensions ['ros']
+[8.885s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/storm32) by extension 'ros'
+[8.886s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/storm32) by extensions ['cmake', 'python']
+[8.886s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/storm32) by extension 'cmake'
+[8.886s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/storm32) by extension 'python'
+[8.886s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/storm32) by extensions ['python_setup_py']
+[8.887s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/storm32) by extension 'python_setup_py'
+[8.887s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/test) by extensions ['ignore', 'ignore_ament_install']
+[8.887s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/test) by extension 'ignore'
+[8.888s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/test) by extension 'ignore_ament_install'
+[8.888s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/test) by extensions ['colcon_pkg']
+[8.888s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/test) by extension 'colcon_pkg'
+[8.888s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/test) by extensions ['colcon_meta']
+[8.888s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/test) by extension 'colcon_meta'
+[8.889s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/test) by extensions ['ros']
+[8.889s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/test) by extension 'ros'
+[8.889s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/test) by extensions ['cmake', 'python']
+[8.889s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/test) by extension 'cmake'
+[8.889s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/test) by extension 'python'
+[8.889s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/test) by extensions ['python_setup_py']
+[8.890s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/test) by extension 'python_setup_py'
+[8.890s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/uAvionix) by extensions ['ignore', 'ignore_ament_install']
+[8.890s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/uAvionix) by extension 'ignore'
+[8.891s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/uAvionix) by extension 'ignore_ament_install'
+[8.891s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/uAvionix) by extensions ['colcon_pkg']
+[8.891s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/uAvionix) by extension 'colcon_pkg'
+[8.891s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/uAvionix) by extensions ['colcon_meta']
+[8.891s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/uAvionix) by extension 'colcon_meta'
+[8.892s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/uAvionix) by extensions ['ros']
+[8.892s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/uAvionix) by extension 'ros'
+[8.892s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/uAvionix) by extensions ['cmake', 'python']
+[8.892s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/uAvionix) by extension 'cmake'
+[8.893s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/uAvionix) by extension 'python'
+[8.893s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/uAvionix) by extensions ['python_setup_py']
+[8.893s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/uAvionix) by extension 'python_setup_py'
+[8.894s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/ualberta) by extensions ['ignore', 'ignore_ament_install']
+[8.895s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/ualberta) by extension 'ignore'
+[8.895s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/ualberta) by extension 'ignore_ament_install'
+[8.895s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/ualberta) by extensions ['colcon_pkg']
+[8.896s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/ualberta) by extension 'colcon_pkg'
+[8.896s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/ualberta) by extensions ['colcon_meta']
+[8.897s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/ualberta) by extension 'colcon_meta'
+[8.897s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/ualberta) by extensions ['ros']
+[8.897s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/ualberta) by extension 'ros'
+[8.898s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/ualberta) by extensions ['cmake', 'python']
+[8.899s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/ualberta) by extension 'cmake'
+[8.899s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/ualberta) by extension 'python'
+[8.900s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/ualberta) by extensions ['python_setup_py']
+[8.900s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/modules/mavlink_c_library_v2/ualberta) by extension 'python_setup_py'
+[8.901s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/src) by extensions ['ignore', 'ignore_ament_install']
+[8.902s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/src) by extension 'ignore'
+[8.902s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/src) by extension 'ignore_ament_install'
+[8.903s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/src) by extensions ['colcon_pkg']
+[8.903s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/src) by extension 'colcon_pkg'
+[8.903s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/src) by extensions ['colcon_meta']
+[8.903s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/src) by extension 'colcon_meta'
+[8.903s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/src) by extensions ['ros']
+[8.903s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/src) by extension 'ros'
+[8.904s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/src) by extensions ['cmake', 'python']
+[8.904s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/src) by extension 'cmake'
+[8.904s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/src) by extension 'python'
+[8.905s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/src) by extensions ['python_setup_py']
+[8.905s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/src) by extension 'python_setup_py'
+[8.906s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/src/common) by extensions ['ignore', 'ignore_ament_install']
+[8.906s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/src/common) by extension 'ignore'
+[8.907s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/src/common) by extension 'ignore_ament_install'
+[8.907s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/src/common) by extensions ['colcon_pkg']
+[8.907s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/src/common) by extension 'colcon_pkg'
+[8.908s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/src/common) by extensions ['colcon_meta']
+[8.908s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/src/common) by extension 'colcon_meta'
+[8.908s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/src/common) by extensions ['ros']
+[8.908s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/src/common) by extension 'ros'
+[8.908s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/src/common) by extensions ['cmake', 'python']
+[8.909s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/src/common) by extension 'cmake'
+[8.909s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/src/common) by extension 'python'
+[8.909s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/src/common) by extensions ['python_setup_py']
+[8.909s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/src/common) by extension 'python_setup_py'
+[8.909s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/tests) by extensions ['ignore', 'ignore_ament_install']
+[8.910s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/tests) by extension 'ignore'
+[8.910s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/tests) by extension 'ignore_ament_install'
+[8.910s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/tests) by extensions ['colcon_pkg']
+[8.910s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/tests) by extension 'colcon_pkg'
+[8.910s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/tests) by extensions ['colcon_meta']
+[8.911s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/tests) by extension 'colcon_meta'
+[8.911s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/tests) by extensions ['ros']
+[8.911s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/tests) by extension 'ros'
+[8.911s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/tests) by extensions ['cmake', 'python']
+[8.911s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/tests) by extension 'cmake'
+[8.912s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/tests) by extension 'python'
+[8.912s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/tests) by extensions ['python_setup_py']
+[8.912s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/tests) by extension 'python_setup_py'
+[8.913s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/tools) by extensions ['ignore', 'ignore_ament_install']
+[8.913s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/tools) by extension 'ignore'
+[8.914s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/tools) by extension 'ignore_ament_install'
+[8.914s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/tools) by extensions ['colcon_pkg']
+[8.914s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/tools) by extension 'colcon_pkg'
+[8.915s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/tools) by extensions ['colcon_meta']
+[8.915s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/tools) by extension 'colcon_meta'
+[8.915s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/tools) by extensions ['ros']
+[8.916s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/tools) by extension 'ros'
+[8.916s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/tools) by extensions ['cmake', 'python']
+[8.917s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/tools) by extension 'cmake'
+[8.917s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/tools) by extension 'python'
+[8.917s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/tools) by extensions ['python_setup_py']
+[8.918s] Level 1:colcon.colcon_core.package_identification:_identify(mavlink-router/tools) by extension 'python_setup_py'
+[8.918s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) using defaults
+[8.919s] Level 1:colcon.colcon_core.package_discovery:discover_packages(ignore) discover
+[8.919s] Level 1:colcon.colcon_core.package_discovery:discover_packages(ignore) using defaults
+[8.919s] Level 1:colcon.colcon_core.package_discovery:discover_packages(path) discover
+[8.919s] Level 1:colcon.colcon_core.package_discovery:discover_packages(path) using defaults
+[9.245s] Level 1:colcon.colcon_core.package_discovery:discover_packages(prefix_path) check parameters
+[9.246s] Level 1:colcon.colcon_core.package_discovery:discover_packages(prefix_path) discover
+[9.366s] DEBUG:colcon.colcon_installed_package_information.package_discovery:Found 5 installed packages in /home/lar/ros2_ws/install
+[9.377s] DEBUG:colcon.colcon_installed_package_information.package_discovery:Found 263 installed packages in /opt/ros/foxy
+[9.392s] Level 1:colcon.colcon_core.package_discovery:discover_packages(prefix_path) using defaults
+[10.010s] INFO:colcon.colcon_core.executor:Executing jobs using 'parallel' executor
+[10.014s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:run_until_complete
+[10.015s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:closing loop
+[10.016s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:loop closed
+[10.016s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:run_until_complete finished with '0'
+[10.016s] DEBUG:colcon.colcon_core.event_reactor:joining thread
+[10.017s] DEBUG:colcon.colcon_core.event_reactor:joined thread
+[10.037s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_core.shell.bat': Not used on non-Windows systems
+[10.038s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/lar/USV/install/local_setup.ps1'
+[10.047s] INFO:colcon.colcon_core.shell:Creating prefix util module '/home/lar/USV/install/_local_setup_util_ps1.py'
+[10.060s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/lar/USV/install/setup.ps1'
+[10.072s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/lar/USV/install/local_setup.sh'
+[10.076s] INFO:colcon.colcon_core.shell:Creating prefix util module '/home/lar/USV/install/_local_setup_util_sh.py'
+[10.079s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/lar/USV/install/setup.sh'
+[10.088s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/lar/USV/install/local_setup.bash'
+[10.091s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/lar/USV/install/setup.bash'
+[10.097s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/lar/USV/install/local_setup.zsh'
+[10.102s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/lar/USV/install/setup.zsh'
