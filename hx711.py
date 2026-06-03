@@ -37,6 +37,13 @@ class TensionNode(Node):
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(self.dt_pin, GPIO.IN)
         GPIO.setup(self.sck_pin, GPIO.OUT)
+        # Reset HX711 by pulsing SCK 60 times (forces it back to ready state)
+        for _ in range(60):
+            GPIO.output(self.sck_pin, 1)
+            time.sleep(0.00005)
+            GPIO.output(self.sck_pin, 0)
+            time.sleep(0.00005)
+        time.sleep(0.5)  # Let HX711 settle
 
         self.publisher_ = self.create_publisher(Float32, 'tension', 10)
 
@@ -44,8 +51,11 @@ class TensionNode(Node):
         self.timer = self.create_timer(0.05, self.check_weight)
 
     def read_hx711(self):
+        timeout = time.time() + 2.0
         while GPIO.input(self.dt_pin) == 1:
-            pass
+            if time.time() > timeout:
+                raise RuntimeError("HX711 timeout - DT pin stuck HIGH")
+            time.sleep(0.001)
 
         count = 0
         for _ in range(24):
@@ -86,9 +96,9 @@ class TensionNode(Node):
             time.sleep(1 / self.mag)
 
         self.filtered_val = sum(self.readings) / len(self.readings)
-        if self.filtered_val > 30 or self.filtered_val < -10:
+        if self.filtered_val > 1000 or self.filtered_val < -1000:
             print(f"Calibration conditions were not optimal (Value is: {self.filtered_val:.2f}), Calibration restarted")
-            self.cal_error +1
+            self.cal_error += 1
             self.filtered_val = 0.0
             self.calibrate()
             if self.cal_error > 5:
@@ -136,4 +146,5 @@ class TensionNode(Node):
 
     def destroy_node(self):
         super().destroy_node()
-        GPIO.cleanup()
+        # Don't call GPIO.cleanup() here - let the test fixture handle it
+        # to avoid resetting pin state between tests

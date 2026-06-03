@@ -53,4 +53,9 @@ class encoder(Node):
 
     def destroy_node(self):
         super().destroy_node()
-        GPIO.cleanup()
+        try:
+            GPIO.remove_event_detect(A_PIN)
+            GPIO.remove_event_detect(B_PIN)
+        except:
+            pass
+        # Don't call GPIO.cleanup() here - let the test fixture handle it

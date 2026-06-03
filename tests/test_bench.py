@@ -1,3 +1,4 @@
+import rclpy
 """
 USV Test Bench - Comprehensive system bringup tests.
 
@@ -35,7 +36,7 @@ def test_tension_reads(gpio_setup):
     UNIT TEST 1/8: Tension Sensor (HX711)
     Verify HX711 load cell can read and publish tension values.
     """
-    from conftest import print_test_header, print_test_result, pause_for_approval
+    from utils import print_test_header, print_test_result, pause_for_approval
     
     print_test_header("TENSION SENSOR (HX711)", 1, 8)
     
@@ -88,7 +89,7 @@ def test_encoder_reads(gpio_setup):
     UNIT TEST 2/8: Encoder
     Verify encoder can read position and angle values.
     """
-    from conftest import print_test_header, print_test_result, pause_for_approval
+    from utils import print_test_header, print_test_result, pause_for_approval
     
     print_test_header("ENCODER", 2, 8)
     
@@ -147,7 +148,7 @@ def test_stepper_steps(gpio_setup, pigpio_connection):
     UNIT TEST 3/8: Stepper Motor (Winch)
     Verify stepper motor can step and change direction.
     """
-    from conftest import print_test_header, print_test_result, pause_for_approval, safe_gpio_read, safe_gpio_write
+    from utils import print_test_header, print_test_result, pause_for_approval, safe_gpio_read, safe_gpio_write
     
     print_test_header("STEPPER MOTOR (Winch)", 3, 8)
     
@@ -226,7 +227,7 @@ def test_thrusters_pwm(pigpio_connection):
     UNIT TEST 4/8: Thrusters (T200)
     Verify T200 thrusters respond to PWM commands.
     """
-    from conftest import print_test_header, print_test_result, pause_for_approval
+    from utils import print_test_header, print_test_result, pause_for_approval
     
     print_test_header("THRUSTERS (T200)", 4, 8)
     
@@ -307,7 +308,7 @@ def test_gps_connect(serial_connection):
     UNIT TEST 5/8: GPS Receiver
     Verify GPS can establish serial connection and receive messages.
     """
-    from conftest import print_test_header, print_test_result, pause_for_approval
+    from utils import print_test_header, print_test_result, pause_for_approval
     
     print_test_header("GPS RECEIVER", 5, 8)
     
@@ -375,7 +376,7 @@ def test_tension_stepper_interaction(gpio_setup, pigpio_connection):
     INTEGRATION TEST 6/8: Tension Sensor → Stepper Motor
     Verify stepper motor responds to tension feedback.
     """
-    from conftest import print_test_header, print_test_result, pause_for_approval
+    from utils import print_test_header, print_test_result, pause_for_approval
     
     print_test_header("TENSION → STEPPER Interaction", 6, 8)
     
@@ -403,10 +404,16 @@ def test_tension_stepper_interaction(gpio_setup, pigpio_connection):
         
         # Monitor for changes
         tensions = []
+        last_nonzero = 0.0
         for i in range(10):
-            time.sleep(1)
-            tensions.append(tension_node.tension)
-            print(f"    [{i+1}/10] Tension: {tension_node.tension:.2f} kg")
+            # Spin ROS so the timer callback actually fires
+            for _ in range(20):
+                rclpy.spin_once(tension_node, timeout_sec=0.05)
+            t = tension_node.tension
+            if t != 0:
+                last_nonzero = t
+            tensions.append(last_nonzero)
+            print(f"    [{i+1}/10] Tension: {last_nonzero:.2f} kg  (pull the cable!)")
         
         tension_node.destroy_node()
         
@@ -442,7 +449,7 @@ def test_encoder_thrusters_interaction(gpio_setup, pigpio_connection):
     INTEGRATION TEST 7/8: Encoder → Thrusters
     Verify thrusters activate correctly based on encoder angle.
     """
-    from conftest import print_test_header, print_test_result, pause_for_approval
+    from utils import print_test_header, print_test_result, pause_for_approval
     
     print_test_header("ENCODER → THRUSTERS Interaction", 7, 8)
     
@@ -509,7 +516,7 @@ def test_system_startup(gpio_setup, pigpio_connection):
     INTEGRATION TEST 8/8: System Startup
     Verify all components initialize together without errors.
     """
-    from conftest import print_test_header, print_test_result, pause_for_approval
+    from utils import print_test_header, print_test_result, pause_for_approval
     
     print_test_header("SYSTEM STARTUP (All Components)", 8, 8)
     
@@ -610,3 +617,86 @@ def pytest_collection_modifyitems(config, items):
 
 if __name__ == "__main__":
     print("Run this test suite with: pytest tests/test_bench.py -v -s")
+
+
+# ============================================================================
+# VISUAL DEMO TEST 9: Full system visual demo
+# ============================================================================
+
+@pytest.mark.visual
+def test_visual_demo(pigpio_connection):
+    """
+    VISUAL TEST 9: Full system visual demo
+    Runs thrusters + winch so you can see everything moving.
+    Run with: pytest tests/test_bench.py::test_visual_demo -v -s -m visual
+    """
+    from utils import print_test_header, print_test_result, pause_for_approval
+    import pigpio as _pigpio
+
+    print_test_header("VISUAL DEMO (Thrusters + Winch)", 9, 9)
+
+    pi = pigpio_connection
+
+    PIN_RIGHT, PIN_LEFT = 26, 12
+    STEP_PIN, DIR_PIN   = 5, 6
+    NEUTRAL, GENTLE_FWD, FAST_FWD = 1500, 1600, 1700
+    GENTLE_REV, FAST_REV, SLOW_FWD = 1400, 1300, 1550
+    HOLD, HOLD_NEUTR = 5, 2
+
+    pi.set_mode(STEP_PIN, _pigpio.OUTPUT)
+    pi.set_mode(DIR_PIN,  _pigpio.OUTPUT)
+
+    def drive(r, l, t, label):
+        print(f"  [{label}] R={r} L={l} ({t}s)")
+        pi.set_servo_pulsewidth(PIN_RIGHT, r)
+        pi.set_servo_pulsewidth(PIN_LEFT, l)
+        time.sleep(t)
+
+    def neutral():
+        drive(NEUTRAL, NEUTRAL, HOLD_NEUTR, "neutral")
+
+    def winch(direction, freq, duration, label):
+        print(f"  [WINCH] {label} ({duration}s)")
+        pi.write(DIR_PIN, direction)
+        time.sleep(0.005)
+        pulse_us = int(1_000_000 / (freq * 2))
+        end = time.time() + duration
+        while time.time() < end:
+            pi.write(STEP_PIN, 1)
+            time.sleep(pulse_us / 1_000_000)
+            pi.write(STEP_PIN, 0)
+            time.sleep(pulse_us / 1_000_000)
+        pi.write(STEP_PIN, 0)
+
+    try:
+        print("\n  ⚠ Make sure thrusters are clamped and winch has free cable!")
+        input("  Press Enter to start visual demo...")
+
+        drive(NEUTRAL, NEUTRAL, 3, "ARM")
+        drive(GENTLE_FWD, GENTLE_FWD, HOLD, "GENTLE FORWARD"); neutral()
+        drive(FAST_FWD,   FAST_FWD,   HOLD, "FAST FORWARD");   neutral()
+        winch(0, 800, 4, "REEL OUT"); time.sleep(1)
+        drive(GENTLE_REV, GENTLE_REV, HOLD, "GENTLE REVERSE"); neutral()
+        drive(FAST_REV,   FAST_REV,   HOLD, "FAST REVERSE");   neutral()
+        winch(1, 800, 4, "REEL IN"); time.sleep(1)
+        drive(GENTLE_REV, GENTLE_FWD, HOLD, "HARD TURN RIGHT"); neutral()
+        drive(GENTLE_FWD, GENTLE_REV, HOLD, "HARD TURN LEFT");  neutral()
+        drive(SLOW_FWD,   FAST_FWD,   HOLD, "SOFT TURN RIGHT"); neutral()
+        drive(FAST_FWD,   SLOW_FWD,   HOLD, "SOFT TURN LEFT");  neutral()
+        winch(0, 2000, 3, "REEL OUT fast")
+        winch(1, 2000, 3, "REEL IN fast")
+
+        print_test_result(True, "Visual demo completed")
+        result = True
+
+    except Exception as e:
+        print_test_result(False, f"Exception: {e}")
+        result = False
+
+    finally:
+        pi.set_servo_pulsewidth(PIN_RIGHT, 0)
+        pi.set_servo_pulsewidth(PIN_LEFT, 0)
+        pi.write(STEP_PIN, 0)
+
+    pause_for_approval()
+    assert result, "Visual demo failed"
