@@ -18,6 +18,7 @@ class USVStateNode(Node):
             't200_speed': None,
             'stepper': None,
             'battery': None,
+            'rov_position': None,
             'last_update': None,
         }
 
@@ -28,6 +29,7 @@ class USVStateNode(Node):
         self.create_subscription(Float32MultiArray, 't200_speed', self.on_thruster, 10)
         self.create_subscription(Float32, 'stepper', self.on_stepper, 10)
         self.create_subscription(Float32MultiArray, 'battery', self.on_battery, 10)
+        self.create_subscription(Float32MultiArray, 'rov_position', self.on_rov_position, 10)
 
         self.get_logger().info('USV state aggregator started.')
 
@@ -56,6 +58,9 @@ class USVStateNode(Node):
 
     def on_battery(self, msg: Float32MultiArray):
         self.set_state('battery', list(msg.data))
+
+    def on_rov_position(self, msg: Float32MultiArray):
+        self.set_state('rov_position', list(msg.data))
 
     def get_state(self):
         with self.state_lock:

@@ -23,12 +23,13 @@ class USVSensorBridge(Node):
         self.send_mavlink = send_mavlink and MAVLINK_AVAILABLE
 
         self.latest = {
-            'gps': None,        # [fix, lat, lon, alt]
-            'battery': None,    # {'voltage':..., 'percent':...}
-            'tension': None,    # float
-            'encoder': None,    # degrees float
-            'motors': None,     # list or tuple
-            'rov_data': None,   # passthrough raw data
+            'gps': None,          # [fix, lat, lon, alt]
+            'battery': None,      # {'voltage':..., 'percent':...}
+            'tension': None,      # float
+            'encoder': None,      # degrees float
+            'motors': None,       # list or tuple
+            'rov_data': None,     # passthrough raw data
+            'rov_position': None, # [lat_deg, lon_deg, depth_m]
         }
 
         # Subscribers (match what's used in the repo)
@@ -38,6 +39,7 @@ class USVSensorBridge(Node):
         self.create_subscription(Float32MultiArray, 't200_speed', self.cb_motors, 10)
         # battery topic may not exist; listen on 'battery' if present
         self.create_subscription(Float32MultiArray, 'battery', self.cb_battery, 10)
+        self.create_subscription(Float32MultiArray, 'rov_position', self.cb_rov_position, 10)
 
         # Publish aggregated state as JSON on ROS topic
         self.pub_state = self.create_publisher(String, 'usv/state', 10)
@@ -45,18 +47,29 @@ class USVSensorBridge(Node):
         # UDP socket
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
-        # MAVLink setup
+        # MAVLink setup — two virtual vehicles so QGC shows both on the map:
+        #   sysid=2  MAV_TYPE_SURFACE_BOAT (7)  → USV  (boat icon)
+        #   sysid=3  MAV_TYPE_SUBMARINE   (12) → calculated ROV position (sub icon)
         if self.send_mavlink:
-            self.get_logger().info('pymavlink available: sending MAVLink messages')
-            self.mav = mavutil.mavlink.MAVLink(None)
-            # default sysid/component
-            self.mav.srcSystem = 1
-            self.mav.srcComponent = 1
+            self.get_logger().info(
+                'pymavlink available: sending MAVLink as sysid=2 (USV) and sysid=3 (calc ROV)'
+            )
+            self.mav_usv = mavutil.mavlink.MAVLink(None)
+            self.mav_usv.srcSystem = 2
+            self.mav_usv.srcComponent = 1
+
+            self.mav_rov_calc = mavutil.mavlink.MAVLink(None)
+            self.mav_rov_calc.srcSystem = 3
+            self.mav_rov_calc.srcComponent = 1
         elif not MAVLINK_AVAILABLE and send_mavlink:
             self.get_logger().warn('Requested MAVLink send but pymavlink not available — falling back to JSON')
 
-        # Timer to send snapshot
+        # Timer to send snapshot at 5 Hz
         self.timer = self.create_timer(0.2, self.send_snapshot)
+
+        # Heartbeat timer at 1 Hz (MAVLink standard requirement for QGC to recognise vehicles)
+        if self.send_mavlink:
+            self.create_timer(1.0, self._send_heartbeats)
 
         # --- Video forwarder configuration (unprocessed UDP video stream) ---
         # Parameters can be set via ROS2 CLI, e.g.:
@@ -109,6 +122,12 @@ class USVSensorBridge(Node):
         except Exception:
             pass
 
+    def cb_rov_position(self, msg: Float32MultiArray):
+        try:
+            self.latest['rov_position'] = list(msg.data)  # [lat_deg, lon_deg, depth_m]
+        except Exception:
+            pass
+
     def send_snapshot(self):
         snapshot = {
             'timestamp': time.time(),
@@ -118,6 +137,7 @@ class USVSensorBridge(Node):
             'encoder': self.latest['encoder'],
             'motors': self.latest['motors'],
             'rov_data': self.latest['rov_data'],
+            'rov_position': self.latest['rov_position'],
         }
 
         # Publish on ROS topic
@@ -132,28 +152,67 @@ class USVSensorBridge(Node):
         except Exception as e:
             self.get_logger().warn(f'UDP send failed: {e}')
 
-        # Optionally send minimal MAVLink messages (GPS and battery)
+        # Send MAVLink GLOBAL_POSITION_INT for both vehicles so QGC shows them on the map
         if self.send_mavlink:
-            try:
-                if snapshot['gps']:
-                    fix, lat, lon, alt = snapshot['gps']
-                    # convert to MAVLink GPS_RAW_INT format
-                    time_usec = int(time.time() * 1e6)
-                    lat_i = int(lat * 1e7)
-                    lon_i = int(lon * 1e7)
-                    alt_mm = int(alt * 1000)
-                    msg_gps = self.mav.gps_raw_int_encode(time_usec, int(fix or 0), lat_i, lon_i, alt_mm, 0, 0, 0, 0, 0)
-                    pkt = msg_gps.pack(self.mav)
-                    self.sock.sendto(pkt, (self.udp_host, int(self.udp_port)))
+            tboot = int(time.time() * 1000) & 0xFFFFFFFF  # ms, wraps at ~49 days
 
-                if snapshot['battery']:
-                    volt = int(snapshot['battery'].get('voltage', 0) * 1000)
-                    # create a SYS_STATUS message with battery voltage in millivolts
-                    msg_sys = self.mav.sys_status_encode(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-                    pkt2 = msg_sys.pack(self.mav)
-                    self.sock.sendto(pkt2, (self.udp_host, int(self.udp_port)))
-            except Exception as e:
-                self.get_logger().warn(f'MAVLink send failed: {e}')
+            # --- USV position (sysid=2, boat icon) ---
+            if snapshot['gps']:
+                try:
+                    _fix, lat, lon, alt = snapshot['gps']
+                    pkt = self.mav_usv.global_position_int_encode(
+                        tboot,
+                        int(lat * 1e7),   # lat  [1e-7 deg]
+                        int(lon * 1e7),   # lon  [1e-7 deg]
+                        int(alt * 1000),  # alt  [mm] above MSL
+                        0,                # relative_alt [mm]
+                        0, 0, 0,          # vx, vy, vz [cm/s] — unknown
+                        65535,            # hdg [cdeg] — 65535 = unknown
+                    ).pack(self.mav_usv)
+                    self.sock.sendto(pkt, (self.udp_host, int(self.udp_port)))
+                except Exception as e:
+                    self.get_logger().warn(f'MAVLink USV position send failed: {e}')
+
+            # --- Calculated ROV position (sysid=3, submarine icon) ---
+            if snapshot['rov_position']:
+                try:
+                    rov_lat, rov_lon, rov_depth = snapshot['rov_position']
+                    # alt above MSL: use USV altitude minus depth as a rough estimate
+                    usv_alt_m = snapshot['gps'][3] if snapshot['gps'] else 0.0
+                    rov_alt_mm = int((usv_alt_m - rov_depth) * 1000)
+                    pkt = self.mav_rov_calc.global_position_int_encode(
+                        tboot,
+                        int(rov_lat * 1e7),
+                        int(rov_lon * 1e7),
+                        rov_alt_mm,
+                        int(-rov_depth * 1000),  # relative_alt negative = below surface
+                        0, 0, 0,
+                        65535,
+                    ).pack(self.mav_rov_calc)
+                    self.sock.sendto(pkt, (self.udp_host, int(self.udp_port)))
+                except Exception as e:
+                    self.get_logger().warn(f'MAVLink calc ROV position send failed: {e}')
+
+    def _send_heartbeats(self):
+        """Send MAVLink HEARTBEAT at 1 Hz for both virtual vehicles so QGC registers them."""
+        # MAVLink type/autopilot constants (integer values, no import needed)
+        MAV_TYPE_SURFACE_BOAT = 7
+        MAV_TYPE_SUBMARINE    = 12
+        MAV_AUTOPILOT_GENERIC = 0
+        MAV_STATE_ACTIVE      = 4
+
+        try:
+            pkt_usv = self.mav_usv.heartbeat_encode(
+                MAV_TYPE_SURFACE_BOAT, MAV_AUTOPILOT_GENERIC, 0, 0, MAV_STATE_ACTIVE
+            ).pack(self.mav_usv)
+            self.sock.sendto(pkt_usv, (self.udp_host, int(self.udp_port)))
+
+            pkt_rov = self.mav_rov_calc.heartbeat_encode(
+                MAV_TYPE_SUBMARINE, MAV_AUTOPILOT_GENERIC, 0, 0, MAV_STATE_ACTIVE
+            ).pack(self.mav_rov_calc)
+            self.sock.sendto(pkt_rov, (self.udp_host, int(self.udp_port)))
+        except Exception as e:
+            self.get_logger().warn(f'Heartbeat send failed: {e}')
 
     def _video_forward_loop(self):
         """

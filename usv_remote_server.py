@@ -23,6 +23,7 @@ try:
     from joy_to_cmd_vel import JoyToCmdVel
     from state_aggregator import USVStateNode
     from usv_sensor_bridge import USVSensorBridge
+    from rov_position import ROVPositionNode
     ROS_AVAILABLE = True
 except Exception:
     ROS_AVAILABLE = False
@@ -303,6 +304,7 @@ class USVService:
         self.ros_thread = None
         self.server = None
         self.state_node = None
+        self.mav = None  # Created before ROS so ROVPositionNode can receive it
 
     def start_ros(self):
         if not ROS_AVAILABLE:
@@ -321,6 +323,7 @@ class USVService:
             CmdVelBridge(),
             JoyToCmdVel(),
             self.state_node,
+            ROVPositionNode(mav_connection=self.mav),
             USVSensorBridge(udp_host='127.0.0.1', udp_port=14551, send_mavlink=True),  # Forward GPS to MAVLink
         ]
         self.executor = MultiThreadedExecutor()
@@ -341,10 +344,10 @@ class USVService:
         rclpy.shutdown()
 
     def run(self):
+        self.mav = connect(self.mavlink_conn_str)
         if self.ros_enable:
             self.start_ros()
-        mav = connect(self.mavlink_conn_str)
-        self.server = RemoteCommandServer(mav, state_node=self.state_node, port=self.command_port)
+        self.server = RemoteCommandServer(self.mav, state_node=self.state_node, port=self.command_port)
         try:
             self.server.run()
         except KeyboardInterrupt:
