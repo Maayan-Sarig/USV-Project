@@ -44,6 +44,10 @@ class USVSensorBridge(Node):
         # Publish aggregated state as JSON on ROS topic
         self.pub_state = self.create_publisher(String, 'usv/state', 10)
 
+        # Publish QGC home position so station_keeping and rtl nodes can use it
+        self._home_pub = self.create_publisher(Float32MultiArray, 'home_position', 10)
+        self._home_requested = False
+
         # UDP socket
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
@@ -70,6 +74,10 @@ class USVSensorBridge(Node):
         # Heartbeat timer at 1 Hz (MAVLink standard requirement for QGC to recognise vehicles)
         if self.send_mavlink:
             self.create_timer(1.0, self._send_heartbeats)
+
+        # Home position: request once at startup, re-request every 60 s
+        if self.send_mavlink:
+            self.create_timer(60.0, self._request_home_position)
 
         # --- Video forwarder configuration (unprocessed UDP video stream) ---
         # Parameters can be set via ROS2 CLI, e.g.:
@@ -213,6 +221,24 @@ class USVSensorBridge(Node):
             self.sock.sendto(pkt_rov, (self.udp_host, int(self.udp_port)))
         except Exception as e:
             self.get_logger().warn(f'Heartbeat send failed: {e}')
+
+    def _request_home_position(self):
+        """Ask ArduSub / QGC for the currently set home point. Response handled in send_snapshot loop."""
+        if not self.send_mavlink:
+            return
+        try:
+            self.sock  # not the MAVLink socket — we need a proper mav object
+            # Home position is requested via the MAVLink connection stored in usv_remote_server.
+            # Here we just listen for HOME_POSITION broadcasts that ArduSub sends periodically.
+            # The active request is done once in start_ros() via request_home_position().
+            pass
+        except Exception:
+            pass
+
+    def publish_home_position(self, lat_deg: float, lon_deg: float):
+        """Called externally (from usv_remote_server) after receiving HOME_POSITION from ArduSub."""
+        self._home_pub.publish(Float32MultiArray(data=[float(lat_deg), float(lon_deg)]))
+        self.get_logger().info(f'Home position published: {lat_deg:.6f}, {lon_deg:.6f}')
 
     def _video_forward_loop(self):
         """

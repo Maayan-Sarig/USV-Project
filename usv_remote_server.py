@@ -25,6 +25,8 @@ try:
     from usv_sensor_bridge import USVSensorBridge
     from rov_position import ROVPositionNode
     from cruise_control import CruiseControlNode
+    from station_keeping import StationKeepingNode
+    from rtl import RTLNode
     ROS_AVAILABLE = True
 except Exception:
     ROS_AVAILABLE = False
@@ -53,6 +55,7 @@ from blue_rov2_terminal_control import (
     request_mission_list,
     set_relay,
     request_battery,
+    request_home_position,
 )
 
 
@@ -105,6 +108,7 @@ class RemoteCommandServer:
         self.running = False
         self.video_forwarder = None
         self.last_client_addr = None
+        self._mode_pub = None   # set by USVService after ROS init
 
     def handle_command(self, command_text):
         parts = command_text.strip().split()
@@ -121,10 +125,19 @@ class RemoteCommandServer:
                 show_modes(self.master)
                 return 'Modes displayed on server console.'
             elif cmd == 'mode':
+                # Check for USV operating mode first
+                USV_MODES = ('STATION_KEEPING', 'MANUAL', 'AUTO', 'RTL')
+                if args and args[0].upper() in USV_MODES:
+                    new_mode = args[0].upper()
+                    if self._mode_pub is not None:
+                        from std_msgs.msg import String as RosString
+                        self._mode_pub.publish(RosString(data=new_mode))
+                    return f'USV mode set to {new_mode}'
+                # Otherwise treat as ROV MAVLink mode
                 if not args:
-                    return 'Usage: mode <MODE>'
+                    return f'Usage: mode <ROV_MODE> or mode <{"│".join(USV_MODES)}>'
                 set_mode(self.master, args[0])
-                return f'Mode command sent: {args[0]}'
+                return f'ROV mode command sent: {args[0]}'
             elif cmd == 'arm':
                 arm(self.master, True)
                 return 'Arm command sent.'
@@ -312,6 +325,8 @@ class USVService:
             raise RuntimeError('ROS2 is not available in this environment.')
         rclpy.init()
         self.state_node = USVStateNode()
+        sensor_bridge = USVSensorBridge(udp_host='127.0.0.1', udp_port=14551, send_mavlink=True)
+        rtl_node = RTLNode(mav_connection=self.mav)
         self.ros_nodes = [
             TensionNode(),
             WinchMotorNode(),
@@ -326,13 +341,27 @@ class USVService:
             JoyToCmdVel(),
             self.state_node,
             ROVPositionNode(mav_connection=self.mav),
-            USVSensorBridge(udp_host='127.0.0.1', udp_port=14551, send_mavlink=True),  # Forward GPS to MAVLink
+            sensor_bridge,
+            StationKeepingNode(),
+            rtl_node,
         ]
         self.executor = MultiThreadedExecutor()
         for node in self.ros_nodes:
             self.executor.add_node(node)
         self.ros_thread = threading.Thread(target=self.executor.spin, daemon=True)
         self.ros_thread.start()
+
+        # Request home position from QGC/ArduSub and distribute to ROS nodes
+        try:
+            home_lat, home_lon = request_home_position(self.mav)
+            if home_lat is not None:
+                sensor_bridge.publish_home_position(home_lat, home_lon)
+                print(f'Home position from QGC: {home_lat:.6f}, {home_lon:.6f}')
+            else:
+                print('Warning: no HOME_POSITION received from ArduSub — nodes will auto-set from first GPS fix.')
+        except Exception as e:
+            print(f'Warning: could not request home position: {e}')
+
         print('ROS2 nodes started in USV service.')
 
     def stop_ros(self):
@@ -350,6 +379,21 @@ class USVService:
         if self.ros_enable:
             self.start_ros()
         self.server = RemoteCommandServer(self.mav, state_node=self.state_node, port=self.command_port)
+
+        # Wire up ROS publisher for usv_mode so mode command works from UDP
+        if self.ros_enable and ROS_AVAILABLE:
+            import rclpy as _rclpy
+            from std_msgs.msg import String as _RosString
+            from rclpy.node import Node as _Node
+
+            class _ModePub(_Node):
+                def __init__(self):
+                    super().__init__('_usv_mode_pub')
+                    self.pub = self.create_publisher(_RosString, 'usv_mode', 10)
+
+            _mp = _ModePub()
+            self.executor.add_node(_mp)
+            self.server._mode_pub = _mp.pub
         try:
             self.server.run()
         except KeyboardInterrupt:

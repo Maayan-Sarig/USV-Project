@@ -429,6 +429,20 @@ def request_status(master):
     print("Request sent. Use 'listen ATTITUDE' or 'listen SYS_STATUS' to read messages.")
 
 
+def request_home_position(master):
+    """Request HOME_POSITION from ArduSub / QGC-set home. Returns (lat_deg, lon_deg) or (None, None)."""
+    master.mav.command_long_send(
+        master.target_system,
+        master.target_component,
+        mavutil.mavlink.MAV_CMD_GET_HOME_POSITION,
+        0, 0, 0, 0, 0, 0, 0, 0,
+    )
+    msg = master.recv_match(type='HOME_POSITION', blocking=True, timeout=5)
+    if msg:
+        return msg.latitude / 1e7, msg.longitude / 1e7
+    return None, None
+
+
 def request_battery(master):
     print("Requesting battery status message...")
     master.mav.command_long_send(

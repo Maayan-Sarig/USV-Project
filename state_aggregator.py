@@ -3,7 +3,7 @@ import threading
 
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import Float32, Float32MultiArray
+from std_msgs.msg import Float32, Float32MultiArray, String
 
 
 class USVStateNode(Node):
@@ -19,6 +19,8 @@ class USVStateNode(Node):
             'stepper': None,
             'battery': None,
             'rov_position': None,
+            'usv_mode': 'STATION_KEEPING',
+            'rtl_active': False,
             'last_update': None,
         }
 
@@ -30,6 +32,8 @@ class USVStateNode(Node):
         self.create_subscription(Float32, 'stepper', self.on_stepper, 10)
         self.create_subscription(Float32MultiArray, 'battery', self.on_battery, 10)
         self.create_subscription(Float32MultiArray, 'rov_position', self.on_rov_position, 10)
+        self.create_subscription(String,            'usv_mode',     self.on_usv_mode,     10)
+        self.create_subscription(String,            'rtl_trigger',  self.on_rtl_trigger,  10)
 
         self.get_logger().info('USV state aggregator started.')
 
@@ -61,6 +65,13 @@ class USVStateNode(Node):
 
     def on_rov_position(self, msg: Float32MultiArray):
         self.set_state('rov_position', list(msg.data))
+
+    def on_usv_mode(self, msg: String):
+        self.set_state('usv_mode', msg.data)
+        self.set_state('rtl_active', msg.data == 'RTL')
+
+    def on_rtl_trigger(self, msg: String):
+        self.set_state('rtl_active', True)
 
     def get_state(self):
         with self.state_lock:

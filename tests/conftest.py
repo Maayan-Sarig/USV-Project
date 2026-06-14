@@ -98,6 +98,25 @@ def safe_gpio_write(pin, value):
 
 
 # ============================================================================
+# ADDITIONAL FIXTURES for test_comprehensive.py
+# ============================================================================
+
+@pytest.fixture(scope="session")
+def mavlink_connection():
+    """
+    Session-scoped MAVLink connection to BlueROV2 via MAVProxy.
+    Tests marked @pytest.mark.rov are skipped when this fixture cannot connect.
+    Prerequisite: MAVProxy forwarding BlueROV2 telemetry to udp:127.0.0.1:14551.
+    """
+    try:
+        from blue_rov2_terminal_control import connect
+        mav = connect('udp:127.0.0.1:14551', timeout=5)
+        yield mav
+    except Exception as e:
+        pytest.skip(f"BlueROV2 not reachable (MAVProxy not running?): {e}")
+
+
+# ============================================================================
 # SESSION-LEVEL SETUP
 # ============================================================================
 

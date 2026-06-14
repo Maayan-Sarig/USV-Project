@@ -1,6 +1,6 @@
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import Float32, Float32MultiArray
+from std_msgs.msg import Float32, Float32MultiArray, String
 import pigpio
 import time
 import math
@@ -22,6 +22,8 @@ class ThrusterNode(Node):
         super().__init__('thruster_node')
         self.boost        = 0.0   # depth-follow boost from follower.py  → 'follow'
         self.cruise_boost = 0.0   # forward cruise boost from cruise_control.py → 'cruise_boost'
+        self._mode        = 'STATION_KEEPING'  # default — steered by sk_angle
+        self._sk_boost    = 0.0   # forward boost from station_keeping/rtl → 'sk_boost'
 
         self.right = pigpio.pi()
         self.left = pigpio.pi()
@@ -36,10 +38,13 @@ class ThrusterNode(Node):
         self.right.set_servo_pulsewidth(PWM_PIN_RIGHT, NEUTRAL)
         self.left.set_servo_pulsewidth(PWM_PIN_LEFT, NEUTRAL)
 
-        self.subscription1 = self.create_subscription(Float32, 'encoder_angle', self.steer_callback, 10)
-        self.subscription2 = self.create_subscription(Float32, 'thruster_cmd',  self.steer_callback, 10)
-        self.subscription3 = self.create_subscription(Float32, 'follow',        self.follow_boost_cb, 10)
-        self.subscription4 = self.create_subscription(Float32, 'cruise_boost',  self.cruise_boost_cb, 10)
+        self.subscription1 = self.create_subscription(Float32, 'encoder_angle', self.steer_callback,   10)
+        self.subscription2 = self.create_subscription(Float32, 'thruster_cmd',  self.steer_callback,   10)
+        self.subscription3 = self.create_subscription(Float32, 'follow',        self.follow_boost_cb,  10)
+        self.subscription4 = self.create_subscription(Float32, 'cruise_boost',  self.cruise_boost_cb,  10)
+        self.subscription5 = self.create_subscription(String,  'usv_mode',      self._on_mode,         10)
+        self.subscription6 = self.create_subscription(Float32, 'sk_angle',      self._on_sk_angle,     10)
+        self.subscription7 = self.create_subscription(Float32, 'sk_boost',      self._on_sk_boost,     10)
         self.get_logger().info("Thruster node ready.")
 
         # publishes PWM values so other nodes can observe speed
@@ -51,25 +56,34 @@ class ThrusterNode(Node):
     def cruise_boost_cb(self, msg: Float32):
         self.cruise_boost = float(msg.data)
 
+    def _on_mode(self, msg: String):
+        self._mode = msg.data
+        self.get_logger().info(f"USV mode → {self._mode}")
+
+    def _on_sk_angle(self, msg: Float32):
+        if self._mode in ('STATION_KEEPING', 'RTL'):
+            self._apply_steering(float(msg.data), self._sk_boost)
+
+    def _on_sk_boost(self, msg: Float32):
+        self._sk_boost = float(msg.data)
+
     def steer_callback(self, msg: Float32):
         """
-        Proportional 3-zone steering derived from truster_test.py patterns:
-
-          |angle| < DEAD_ZONE_DEG            → neutral + total_boost (both motors equal)
-          DEAD_ZONE ≤ |angle| ≤ MAX_ANGLE    → outer motor at NEUTRAL+OUTER_FWD_OFFSET+boost,
-                                               inner motor linearly reduced down to
-                                               NEUTRAL-100+boost at MAX_ANGLE (hard turn)
+        Proportional 3-zone steering from encoder_angle / thruster_cmd topics.
+        Bypassed when mode is STATION_KEEPING or RTL (sk_angle used instead).
 
         Effective PWM differential at key angles (boost=0):
-          angle ≈ 34° (norm=0.25) → outer=1600, inner=1550  → SOFT TURN  (matches test)
+          angle ≈ 34° (norm=0.25) → outer=1600, inner=1550  → SOFT TURN
           angle ≈ 53° (norm=0.5)  → outer=1600, inner=1500  → inner neutral
-          angle = 90° (norm=1.0)  → outer=1600, inner=1400  → HARD TURN  (matches test)
+          angle = 75° (norm=1.0)  → outer=1600, inner=1400  → HARD TURN
         """
-        angle = float(msg.data)
-        total_boost = self.boost + self.cruise_boost
+        if self._mode in ('STATION_KEEPING', 'RTL'):
+            return  # steered by sk_angle topic instead
+        self._apply_steering(float(msg.data), self.boost + self.cruise_boost)
 
+    def _apply_steering(self, angle: float, total_boost: float):
+        """Shared proportional steering — used by both steer_callback and _on_sk_angle."""
         if abs(angle) < DEAD_ZONE_DEG:
-            # Dead zone — straight ahead (or stopped): apply boost only
             pwm = int(NEUTRAL + total_boost)
             right_us = pwm
             left_us  = pwm
