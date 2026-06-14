@@ -24,6 +24,7 @@ try:
     from state_aggregator import USVStateNode
     from usv_sensor_bridge import USVSensorBridge
     from rov_position import ROVPositionNode
+    from cruise_control import CruiseControlNode
     ROS_AVAILABLE = True
 except Exception:
     ROS_AVAILABLE = False
@@ -319,6 +320,7 @@ class USVService:
             GPS(),
             Logger(),
             Follower(),
+            CruiseControlNode(),
             EncoderNode(),
             CmdVelBridge(),
             JoyToCmdVel(),

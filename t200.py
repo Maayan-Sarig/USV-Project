@@ -9,14 +9,19 @@ import math
 PWM_PIN_RIGHT = 26  # BCM GPIO pin (not physical number)
 PWM_PIN_LEFT = 12   # BCM GPIO pin (not physical number)
 FREQ = 50           # ESCs expect 50Hz
-NEUTRAL = 1500      # in microseconds
-FORWARD = 1600      # in microseconds
-REVERSE = 1400      # in microseconds
+NEUTRAL = 1500      # µs
+
+# Proportional steering constants (derived from truster_test.py patterns)
+DEAD_ZONE_DEG    = 15    # degrees — no steering correction inside this band
+MAX_ANGLE_DEG    = 75    # degrees — full hard-turn correction at this angle
+OUTER_FWD_OFFSET = 100   # µs above NEUTRAL for the outer motor during a turn (→ 1600)
+MAX_DIFF_OFFSET  = 200   # µs total differential at MAX_ANGLE_DEG (outer-inner range)
 
 class ThrusterNode(Node):
     def __init__(self):
         super().__init__('thruster_node')
-        self.boost =  0.0
+        self.boost        = 0.0   # depth-follow boost from follower.py  → 'follow'
+        self.cruise_boost = 0.0   # forward cruise boost from cruise_control.py → 'cruise_boost'
 
         self.right = pigpio.pi()
         self.left = pigpio.pi()
@@ -31,51 +36,58 @@ class ThrusterNode(Node):
         self.right.set_servo_pulsewidth(PWM_PIN_RIGHT, NEUTRAL)
         self.left.set_servo_pulsewidth(PWM_PIN_LEFT, NEUTRAL)
 
-        self.subscription1 = self.create_subscription(Float32, 'encoder_angle', self.thrust_callback, 10)
-        self.subscription2 = self.create_subscription(Float32, 'thruster_cmd', self.thrust_callback, 10)
-        self.subscription3 = self.create_subscription(Float32, 'follow', self.booster, 10)
+        self.subscription1 = self.create_subscription(Float32, 'encoder_angle', self.steer_callback, 10)
+        self.subscription2 = self.create_subscription(Float32, 'thruster_cmd',  self.steer_callback, 10)
+        self.subscription3 = self.create_subscription(Float32, 'follow',        self.follow_boost_cb, 10)
+        self.subscription4 = self.create_subscription(Float32, 'cruise_boost',  self.cruise_boost_cb, 10)
         self.get_logger().info("Thruster node ready.")
 
-        # publishes spin to track
+        # publishes PWM values so other nodes can observe speed
         self.spin = self.create_publisher(Float32MultiArray, 't200_speed', 10)
 
-    def booster(self, msg):
-        self.boost = msg.data
+    def follow_boost_cb(self, msg: Float32):
+        self.boost = float(msg.data)
 
-    def thrust_callback(self, msg):
-        forward = 0.0
-        reverse = 0.0
-        if msg.data < -10:
-            if -msg.data <= 20:
-                forward = NEUTRAL + 50 * ((-msg.data)/20.0)
-                reverse = NEUTRAL - 50 * ((-msg.data)/20.0)
-            else:
-                forward = NEUTRAL + 50
-                reverse = NEUTRAL - 50
-            forward += self.boost
-            reverse += self.boost
-            self.right.set_servo_pulsewidth(PWM_PIN_RIGHT, forward)
-            self.left.set_servo_pulsewidth(PWM_PIN_LEFT, reverse)
-            self.spin.publish(Float32MultiArray(data=[forward, reverse]))
+    def cruise_boost_cb(self, msg: Float32):
+        self.cruise_boost = float(msg.data)
 
-        elif msg.data > 10:
-            if msg.data <= 20:
-                forward = NEUTRAL + 50*((msg.data)/20.0)
-                reverse = NEUTRAL - 50*((msg.data)/20.0)
-            else:
-                forward = NEUTRAL + 50
-                reverse = NEUTRAL - 50
-            forward += self.boost
-            reverse += self.boost
-            self.right.set_servo_pulsewidth(PWM_PIN_RIGHT, reverse)
-            self.left.set_servo_pulsewidth(PWM_PIN_LEFT, forward)
-            self.spin.publish(Float32MultiArray(data=[reverse, forward]))
+    def steer_callback(self, msg: Float32):
+        """
+        Proportional 3-zone steering derived from truster_test.py patterns:
 
+          |angle| < DEAD_ZONE_DEG            → neutral + total_boost (both motors equal)
+          DEAD_ZONE ≤ |angle| ≤ MAX_ANGLE    → outer motor at NEUTRAL+OUTER_FWD_OFFSET+boost,
+                                               inner motor linearly reduced down to
+                                               NEUTRAL-100+boost at MAX_ANGLE (hard turn)
+
+        Effective PWM differential at key angles (boost=0):
+          angle ≈ 34° (norm=0.25) → outer=1600, inner=1550  → SOFT TURN  (matches test)
+          angle ≈ 53° (norm=0.5)  → outer=1600, inner=1500  → inner neutral
+          angle = 90° (norm=1.0)  → outer=1600, inner=1400  → HARD TURN  (matches test)
+        """
+        angle = float(msg.data)
+        total_boost = self.boost + self.cruise_boost
+
+        if abs(angle) < DEAD_ZONE_DEG:
+            # Dead zone — straight ahead (or stopped): apply boost only
+            pwm = int(NEUTRAL + total_boost)
+            right_us = pwm
+            left_us  = pwm
         else:
-            neutral = NEUTRAL + self.boost
-            self.right.set_servo_pulsewidth(PWM_PIN_RIGHT, neutral)
-            self.left.set_servo_pulsewidth(PWM_PIN_LEFT, neutral)
-            self.spin.publish(Float32MultiArray(data=[neutral, neutral]))
+            norm = min(1.0, (abs(angle) - DEAD_ZONE_DEG) / (MAX_ANGLE_DEG - DEAD_ZONE_DEG))
+            outer_us = int(NEUTRAL + OUTER_FWD_OFFSET + total_boost)
+            inner_us = int(outer_us - MAX_DIFF_OFFSET * norm)
+
+            if angle > 0:   # cable to the RIGHT → turn right → right motor is inner
+                right_us = inner_us
+                left_us  = outer_us
+            else:           # cable to the LEFT → turn left → left motor is inner
+                right_us = outer_us
+                left_us  = inner_us
+
+        self.right.set_servo_pulsewidth(PWM_PIN_RIGHT, right_us)
+        self.left.set_servo_pulsewidth(PWM_PIN_LEFT,   left_us)
+        self.spin.publish(Float32MultiArray(data=[float(right_us), float(left_us)]))
 
     def destroy_node(self):
         self.get_logger().info("Stopping T200s...")
