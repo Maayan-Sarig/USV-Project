@@ -613,11 +613,13 @@ def show_status_once(master):
 
 
 def set_stream(master, stream_id, rate, start_stop=1):
+    # Use numeric ID 76 for MAV_CMD_REQUEST_DATA_STREAM (legacy constant name changed in newer pymavlink)
+    MAV_CMD_REQUEST_DATA_STREAM = 76
     master.mav.command_long_send(
                                  
         master.target_system,
         master.target_component,
-        mavutil.mavlink.MAV_CMD_REQUEST_DATA_STREAM,
+        MAV_CMD_REQUEST_DATA_STREAM,
         0,
         int(stream_id),
         float(rate),

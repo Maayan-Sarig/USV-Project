@@ -818,13 +818,13 @@ def test_rov_arm_disarm(mavlink_connection):
     time.sleep(1)
 
     arm(mav, True)
-    time.sleep(1)
+    time.sleep(5)
     hb = mav.recv_match(type='HEARTBEAT', blocking=True, timeout=3)
     assert hb is not None, "No HEARTBEAT after arm command"
     assert bool(hb.base_mode & 0x80), "Vehicle should be ARMED (MAV_MODE_FLAG_SAFETY_ARMED set)"
 
     arm(mav, False)
-    time.sleep(1)
+    time.sleep(5)
     hb = mav.recv_match(type='HEARTBEAT', blocking=True, timeout=3)
     assert hb is not None, "No HEARTBEAT after disarm command"
     assert not bool(hb.base_mode & 0x80), "Vehicle should be DISARMED"

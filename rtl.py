@@ -32,6 +32,8 @@ import rclpy
 from rclpy.node import Node
 from std_msgs.msg import Float32, Float32MultiArray, Float64MultiArray, String
 
+from pymavlink import mavutil
+
 # ── Trigger thresholds ────────────────────────────────────────────────────────
 MAX_TENSION_KG           = 135.0   # kg — over-tension trigger
 COMMS_TIMEOUT_S          = 30.0    # s  — heartbeat loss trigger
@@ -66,10 +68,11 @@ def _distance_m(lat1, lon1, lat2, lon2):
 
 
 class RTLNode(Node):
-    def __init__(self, mav_connection=None):
+    def __init__(self, mav_connection=None, mav_lock=None):
         super().__init__('rtl_node')
 
         self._mav            = mav_connection
+        self._mav_lock       = mav_lock or threading.Lock()
         self._rtl_active     = False
         self._tension        = 0.0
         self._home_lat       = None
@@ -92,6 +95,8 @@ class RTLNode(Node):
         self._trigger_pub = self.create_publisher(String,  'rtl_trigger', 10)
         self._angle_pub   = self.create_publisher(Float32, 'sk_angle',    10)
         self._boost_pub   = self.create_publisher(Float32, 'sk_boost',    10)
+        self._rov_mode_pub    = self.create_publisher(String,            'rov_flight_mode',   10)
+        self._manual_ctrl_pub = self.create_publisher(Float32MultiArray, 'rov_manual_control', 10)
 
         # Tension + leak monitor at 5 Hz
         self.create_timer(0.2, self._check_triggers)
@@ -144,18 +149,28 @@ class RTLNode(Node):
             self._trigger_rtl('tension')
 
     def _heartbeat_monitor(self):
-        """Background thread: polls MAVLink for HEARTBEAT and water leak messages."""
+        """Background thread: polls MAVLink for HEARTBEAT, water leak, and
+        operator MANUAL_CONTROL messages. This is the only thread in the
+        process reading the shared MAVLink connection's HEARTBEAT/MANUAL_CONTROL
+        traffic — rov_mirror.py rides on these two republished ROS topics
+        instead of opening its own competing MAVLink listener thread."""
         while rclpy.ok():
             try:
-                msg = self._mav.recv_match(blocking=True, timeout=1.0)
+                with self._mav_lock:
+                    msg = self._mav.recv_match(blocking=True, timeout=1.0)
                 if msg is None:
                     pass
                 elif msg.get_type() == 'HEARTBEAT':
                     self._last_heartbeat = time.time()
+                    if msg.autopilot != mavutil.mavlink.MAV_AUTOPILOT_INVALID:
+                        self._rov_mode_pub.publish(String(data=mavutil.mode_string_v10(msg)))
                 elif msg.get_type() == 'NAMED_VALUE_FLOAT':
                     name = getattr(msg, 'name', b'').strip(b'\x00').decode('ascii', errors='ignore')
                     if name == 'Leak' and float(msg.value) > 0.5 and not self._rtl_active:
                         self._trigger_rtl('leak')
+                elif msg.get_type() == 'MANUAL_CONTROL':
+                    if msg.target == self._mav.target_system:
+                        self._manual_ctrl_pub.publish(Float32MultiArray(data=[float(msg.x), float(msg.r)]))
             except Exception:
                 time.sleep(0.5)
 

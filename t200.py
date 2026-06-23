@@ -24,6 +24,7 @@ class ThrusterNode(Node):
         self.cruise_boost = 0.0   # forward cruise boost from cruise_control.py → 'cruise_boost'
         self._mode        = 'STATION_KEEPING'  # default — steered by sk_angle
         self._sk_boost    = 0.0   # forward boost from station_keeping/rtl → 'sk_boost'
+        self._mirror_boost = 0.0  # forward boost from rov_mirror.py → 'mirror_boost'
 
         self.right = pigpio.pi()
         self.left = pigpio.pi()
@@ -45,6 +46,8 @@ class ThrusterNode(Node):
         self.subscription5 = self.create_subscription(String,  'usv_mode',      self._on_mode,         10)
         self.subscription6 = self.create_subscription(Float32, 'sk_angle',      self._on_sk_angle,     10)
         self.subscription7 = self.create_subscription(Float32, 'sk_boost',      self._on_sk_boost,     10)
+        self.subscription8 = self.create_subscription(Float32, 'mirror_angle',  self._on_mirror_angle, 10)
+        self.subscription9 = self.create_subscription(Float32, 'mirror_boost',  self._on_mirror_boost, 10)
         self.get_logger().info("Thruster node ready.")
 
         # publishes PWM values so other nodes can observe speed
@@ -67,18 +70,26 @@ class ThrusterNode(Node):
     def _on_sk_boost(self, msg: Float32):
         self._sk_boost = float(msg.data)
 
+    def _on_mirror_angle(self, msg: Float32):
+        if self._mode == 'ROV_MIRROR':
+            self._apply_steering(float(msg.data), self._mirror_boost)
+
+    def _on_mirror_boost(self, msg: Float32):
+        self._mirror_boost = float(msg.data)
+
     def steer_callback(self, msg: Float32):
         """
         Proportional 3-zone steering from encoder_angle / thruster_cmd topics.
-        Bypassed when mode is STATION_KEEPING or RTL (sk_angle used instead).
+        Bypassed when mode is STATION_KEEPING, RTL, or ROV_MIRROR (sk_angle /
+        mirror_angle used instead).
 
         Effective PWM differential at key angles (boost=0):
           angle ≈ 34° (norm=0.25) → outer=1600, inner=1550  → SOFT TURN
           angle ≈ 53° (norm=0.5)  → outer=1600, inner=1500  → inner neutral
           angle = 75° (norm=1.0)  → outer=1600, inner=1400  → HARD TURN
         """
-        if self._mode in ('STATION_KEEPING', 'RTL'):
-            return  # steered by sk_angle topic instead
+        if self._mode in ('STATION_KEEPING', 'RTL', 'ROV_MIRROR'):
+            return  # steered by sk_angle/mirror_angle topic instead
         self._apply_steering(float(msg.data), self.boost + self.cruise_boost)
 
     def _apply_steering(self, angle: float, total_boost: float):

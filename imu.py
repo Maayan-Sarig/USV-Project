@@ -11,8 +11,14 @@ class IMU(Node):
         super().__init__('IMU')
 
         self.bus = smbus2.SMBus(1)
-        self.address = 0x68
-        #self.bus.write_byte_data(self.address, 0x6B, 0)  # Wake MPU6050
+        self.address =0x68
+        self.mpu_available = False
+        try:
+            self.bus.write_byte_data(self.address, 0x6B, 0)  # Wake MPU6050
+            self.mpu_available = True
+        except OSError as e:
+            self.get_logger().warning(f"MPU6050 not found at address 0x{self.address:02X}: {e}")
+            self.get_logger().warning("Continuing without IMU...")
 
         self.location = self.create_publisher(Float32MultiArray, 'location', 10)
         self.create_subscription(Float64MultiArray, 'gps', self.gps_callback, 10)
@@ -90,6 +96,9 @@ class IMU(Node):
         return value
 
     def read_sensor(self):
+        if not self.mpu_available:
+            return  # Skip if MPU6050 not available
+        
         try:
             current_time = time.time()
             dt = current_time - self.last_time

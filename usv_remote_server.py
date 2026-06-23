@@ -27,6 +27,7 @@ try:
     from cruise_control import CruiseControlNode
     from station_keeping import StationKeepingNode
     from rtl import RTLNode
+    from rov_mirror import ROVMirrorNode
     ROS_AVAILABLE = True
 except Exception:
     ROS_AVAILABLE = False
@@ -126,7 +127,7 @@ class RemoteCommandServer:
                 return 'Modes displayed on server console.'
             elif cmd == 'mode':
                 # Check for USV operating mode first
-                USV_MODES = ('STATION_KEEPING', 'MANUAL', 'AUTO', 'RTL')
+                USV_MODES = ('STATION_KEEPING', 'MANUAL', 'AUTO', 'RTL', 'ROV_MIRROR')
                 if args and args[0].upper() in USV_MODES:
                     new_mode = args[0].upper()
                     if self._mode_pub is not None:
@@ -326,7 +327,8 @@ class USVService:
         rclpy.init()
         self.state_node = USVStateNode()
         sensor_bridge = USVSensorBridge(udp_host='127.0.0.1', udp_port=14551, send_mavlink=True, mav_connection=self.mav)
-        rtl_node = RTLNode(mav_connection=self.mav)
+        self.mav_lock = threading.Lock()
+        rtl_node = RTLNode(mav_connection=self.mav, mav_lock=self.mav_lock)
         self.ros_nodes = [
             TensionNode(),
             WinchMotorNode(),
@@ -344,6 +346,7 @@ class USVService:
             sensor_bridge,
             StationKeepingNode(),
             rtl_node,
+            ROVMirrorNode(),
         ]
         self.executor = MultiThreadedExecutor()
         for node in self.ros_nodes:
@@ -353,7 +356,8 @@ class USVService:
 
         # Request home position from QGC/ArduSub and distribute to ROS nodes
         try:
-            home_lat, home_lon = request_home_position(self.mav)
+            with self.mav_lock:
+                home_lat, home_lon = request_home_position(self.mav)
             if home_lat is not None:
                 sensor_bridge.publish_home_position(home_lat, home_lon)
                 print(f'Home position from QGC: {home_lat:.6f}, {home_lon:.6f}')
