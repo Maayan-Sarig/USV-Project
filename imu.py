@@ -1,6 +1,6 @@
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import Float32MultiArray
+from std_msgs.msg import Float32MultiArray, Float64MultiArray
 import smbus2
 import time
 import math
@@ -12,10 +12,10 @@ class IMU(Node):
 
         self.bus = smbus2.SMBus(1)
         self.address = 0x68
-        self.bus.write_byte_data(self.address, 0x6B, 0)  # Wake MPU6050
+        #self.bus.write_byte_data(self.address, 0x6B, 0)  # Wake MPU6050
 
         self.location = self.create_publisher(Float32MultiArray, 'location', 10)
-        self.create_subscription(Float32MultiArray, 'gps', self.gps_callback, 10)
+        self.create_subscription(Float64MultiArray, 'gps', self.gps_callback, 10)
         self.get_logger().info("Connected to GPS.")
 
         self.timer = self.create_timer(0.05, self.read_sensor)  # 20 Hz

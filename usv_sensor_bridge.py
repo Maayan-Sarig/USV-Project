@@ -1,6 +1,7 @@
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import Float32, Float32MultiArray, String
+from std_msgs.msg import Float32, Float32MultiArray, Float64MultiArray, String
+import datetime
 import socket
 import json
 import time
@@ -13,14 +14,27 @@ try:
 except Exception:
     MAVLINK_AVAILABLE = False
 
+_GPS_EPOCH = datetime.datetime(1980, 1, 6, tzinfo=datetime.timezone.utc)
+
+
+def _gps_week_and_tow_ms():
+    """Return (gps_week, time_of_week_ms) for the current instant, for GPS_INPUT's
+    time_week/time_week_ms fields. Ignores the ~18s UTC/GPS leap-second offset —
+    fine for EKF fusion, which doesn't need bit-exact GPS time."""
+    delta = datetime.datetime.now(datetime.timezone.utc) - _GPS_EPOCH
+    gps_week = int(delta.days // 7)
+    seconds_into_week = delta.total_seconds() - gps_week * 604800
+    return gps_week, int(seconds_into_week * 1000)
+
 
 class USVSensorBridge(Node):
-    def __init__(self, udp_host='192.168.1.100', udp_port=14550, send_mavlink=True):
+    def __init__(self, udp_host='192.168.1.100', udp_port=14550, send_mavlink=True, mav_connection=None):
         super().__init__('usv_sensor_bridge')
 
         self.udp_host = udp_host
         self.udp_port = udp_port
         self.send_mavlink = send_mavlink and MAVLINK_AVAILABLE
+        self.mavlink_master = mav_connection
 
         self.latest = {
             'gps': None,          # [fix, lat, lon, alt]
@@ -31,6 +45,9 @@ class USVSensorBridge(Node):
             'rov_data': None,     # passthrough raw data
             'rov_position': None, # [lat_deg, lon_deg, depth_m]
         }
+
+        self._home_origin_sent = False  # Flag: SET_GPS_GLOBAL_ORIGIN sent on first valid fix
+        self._gps_type_confirmed = False  # Flag: ArduSub confirmed GPS_TYPE=14 (MAVLink)
 
         # Subscribers (match what's used in the repo)
         self.create_subscription(Float32MultiArray, 'gps', self.cb_gps, 10)
@@ -79,6 +96,14 @@ class USVSensorBridge(Node):
         if self.send_mavlink:
             self.create_timer(60.0, self._request_home_position)
 
+        # GPS_TYPE must be 14 ("MAVLink") on the ROV's autopilot or it will
+        # silently ignore every GPS_INPUT message we inject below — set it
+        # once now, then keep retrying every 10s until ArduSub confirms it
+        # (PARAM_SET over UDP can be dropped, and there's no harm re-sending).
+        if self.mavlink_master is not None:
+            self._ensure_gps_type_mavlink()
+            self.create_timer(10.0, self._ensure_gps_type_mavlink)
+
         # --- Video forwarder configuration (unprocessed UDP video stream) ---
         # Parameters can be set via ROS2 CLI, e.g.:
         #  ros2 run ... --ros-args -p video_forward.enabled:=True -p video_forward.listen_port:=5600 -p video_forward.rf_host:=192.168.137.1 -p video_forward.rf_port:=5600
@@ -104,8 +129,21 @@ class USVSensorBridge(Node):
     def cb_gps(self, msg: Float32MultiArray):
         try:
             self.latest['gps'] = list(msg.data)
-        except Exception:
-            pass
+            # Inject GPS data to ROV autopilot via MAVLink GPS_INPUT
+            if self.mavlink_master is not None and len(msg.data) >= 4:
+                fix_type = int(msg.data[0])
+                lat = msg.data[1]
+                lon = msg.data[2]
+                alt = msg.data[3]
+                # Only inject if we have a valid 2D or 3D fix
+                if fix_type >= 2:
+                    # On first valid fix, send SET_GPS_GLOBAL_ORIGIN to establish home position
+                    if not self._home_origin_sent:
+                        self.set_gps_global_origin(lat, lon, alt)
+                        self._home_origin_sent = True
+                    self.inject_gps_to_rov(lat, lon, alt, fix_type, num_sats=15)
+        except Exception as e:
+            self.get_logger().warn(f'GPS callback error: {e}')
 
     def cb_tension(self, msg: Float32):
         self.latest['tension'] = float(msg.data)
@@ -135,6 +173,118 @@ class USVSensorBridge(Node):
             self.latest['rov_position'] = list(msg.data)  # [lat_deg, lon_deg, depth_m]
         except Exception:
             pass
+
+    def _ensure_gps_type_mavlink(self):
+        """
+        Set ArduSub's GPS_TYPE parameter to 14 ("MAVLink") so it accepts our
+        injected GPS_INPUT messages instead of expecting a physical GPS
+        receiver wired to a serial port — without this, GPS_INPUT is just
+        silently ignored no matter how correct the data is. Keeps retrying
+        (via the 10s timer set up in __init__) until ArduSub confirms it via
+        PARAM_VALUE, since PARAM_SET over UDP can be dropped.
+        """
+        if self.mavlink_master is None or self._gps_type_confirmed:
+            return
+        GPS_TYPE_TARGET = 14
+        try:
+            self.mavlink_master.mav.param_set_send(
+                self.mavlink_master.target_system,
+                self.mavlink_master.target_component,
+                b'GPS_TYPE',
+                float(GPS_TYPE_TARGET),
+                mavutil.mavlink.MAV_PARAM_TYPE_INT32,
+            )
+            msg = self.mavlink_master.recv_match(type='PARAM_VALUE', blocking=False)
+            if msg is not None and msg.param_id.strip('\x00') == 'GPS_TYPE':
+                if int(msg.param_value) == GPS_TYPE_TARGET:
+                    self._gps_type_confirmed = True
+                    self.get_logger().info(
+                        'GPS_TYPE confirmed = 14 (MAVLink). If this was just set for the '
+                        'first time, ArduSub needs a reboot for it to take effect.'
+                    )
+                else:
+                    self.get_logger().warn(
+                        f'GPS_TYPE is {int(msg.param_value)}, not 14 — sent PARAM_SET, awaiting ack'
+                    )
+        except Exception as e:
+            self.get_logger().warn(f'GPS_TYPE PARAM_SET failed: {e}')
+
+    def inject_gps_to_rov(self, lat, lon, alt, fix_type=3, num_sats=15):
+        """
+        Injects USV GPS data into the ROV autopilot using MAVLink GPS_INPUT.
+        
+        :param lat: Latitude in decimal degrees
+        :param lon: Longitude in decimal degrees
+        :param alt: Altitude/Height in meters (MSL)
+        :param fix_type: 3 = 3D Fix (required for AUTO mode); 2 = 2D Fix
+        :param num_sats: Number of visible satellites to display in QGC
+        """
+        try:
+            if self.mavlink_master is None:
+                return
+            
+            # MAVLink expects time since boot in microseconds
+            boot_time_us = int(time.time() * 1e6)
+            
+            # Convert decimal degrees to integer format expected by MAVLink (deg * 1e7)
+            lat_int = int(lat * 1e7)
+            lon_int = int(lon * 1e7)
+
+            time_week, time_week_ms = _gps_week_and_tow_ms()
+
+            # Send the GPS_INPUT message to the ROV
+            self.mavlink_master.mav.gps_input_send(
+                boot_time_us,           # time_usec
+                0,                      # gps_id (0 for primary virtual GPS instance)
+                0,                      # ignore_flags (0 = all data valid)
+                time_week_ms,           # time_week_ms: ms since start of current GPS week
+                time_week,              # time_week: weeks since the GPS epoch (1980-01-06)
+                int(fix_type),          # fix_type: 3 = 3D Fix, 2 = 2D Fix
+                lat_int,                # lat (deg * 1e7)
+                lon_int,                # lon (deg * 1e7)
+                float(alt),             # alt (meters MSL)
+                1.0,                    # hdop: Horizontal dilution of precision (1.0 is excellent)
+                1.0,                    # vdop: Vertical dilution of precision
+                0.0,                    # vn: Northing velocity (m/s) — stationary
+                0.0,                    # ve: Easting velocity (m/s) — stationary
+                0.0,                    # vd: Downward velocity (m/s) — stationary
+                0.0,                    # speed_accuracy
+                0.1,                    # horiz_accuracy (meters)
+                0.1,                    # vert_accuracy (meters)
+                int(num_sats),          # satellites_visible (displays in QGC)
+                0                       # yaw (GPS heading; 0 if not available)
+            )
+        except Exception as e:
+            self.get_logger().warn(f'GPS injection to ROV failed: {e}')
+
+    def set_gps_global_origin(self, lat, lon, alt):
+        """
+        Sends SET_GPS_GLOBAL_ORIGIN MAVLink command to establish home position.
+        This tells ArduSub: "Here is your starting position for AUTO mode."
+        
+        :param lat: Latitude in decimal degrees
+        :param lon: Longitude in decimal degrees
+        :param alt: Altitude/Height in meters (MSL)
+        """
+        try:
+            if self.mavlink_master is None:
+                return
+            
+            # Convert decimal degrees to integer format (deg * 1e7)
+            lat_int = int(lat * 1e7)
+            lon_int = int(lon * 1e7)
+            
+            # Send SET_GPS_GLOBAL_ORIGIN to set home position
+            self.mavlink_master.mav.set_gps_global_origin_send(
+                self.mavlink_master.target_system,      # target_system (autopilot)
+                self.mavlink_master.target_component,   # target_component
+                lat_int,                                # latitude (deg * 1e7)
+                lon_int,                                # longitude (deg * 1e7)
+                int(alt * 1000)                         # altitude (mm above MSL)
+            )
+            self.get_logger().info(f'SET_GPS_GLOBAL_ORIGIN sent: {lat:.6f}, {lon:.6f}, {alt:.1f}m')
+        except Exception as e:
+            self.get_logger().warn(f'SET_GPS_GLOBAL_ORIGIN failed: {e}')
 
     def send_snapshot(self):
         snapshot = {

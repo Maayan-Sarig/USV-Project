@@ -3,7 +3,7 @@ import rclpy
 from rclpy.node import Node
 from std_msgs.msg import Float32, String
 import tkinter as tk
-from std_msgs.msg import Float32MultiArray
+from std_msgs.msg import Float32MultiArray, Float64MultiArray
 import csv
 from datetime import datetime
 
@@ -56,7 +56,7 @@ class Logger(Node):
         self.subscription7 = self.create_subscription(Float32MultiArray, 'check', self.check, 10)
         self.get_logger().info("Subscribed to check")
 
-        self.subscription8 = self.create_subscription(Float32MultiArray, 'gps', self.gps, 10)
+        self.subscription8 = self.create_subscription(Float64MultiArray, 'gps', self.gps, 10)
         self.get_logger().info("Subscribed to gps")
 
     def listener_callback1(self, msg):

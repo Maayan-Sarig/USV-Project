@@ -30,7 +30,7 @@ import time
 
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import Float32, Float32MultiArray, String
+from std_msgs.msg import Float32, Float32MultiArray, Float64MultiArray, String
 
 # ── Trigger thresholds ────────────────────────────────────────────────────────
 MAX_TENSION_KG           = 135.0   # kg — over-tension trigger
@@ -84,7 +84,7 @@ class RTLNode(Node):
 
         # Subscriptions
         self.create_subscription(Float32,            'tension',       self._on_tension, 10)
-        self.create_subscription(Float32MultiArray,  'gps',           self._on_gps,     10)
+        self.create_subscription(Float64MultiArray,  'gps',           self._on_gps,     10)
         self.create_subscription(Float32MultiArray,  'home_position', self._on_home,    10)
 
         # Outputs
@@ -116,7 +116,7 @@ class RTLNode(Node):
             self._home_lat = float(msg.data[0])
             self._home_lon = float(msg.data[1])
 
-    def _on_gps(self, msg: Float32MultiArray):
+    def _on_gps(self, msg: Float64MultiArray):
         if len(msg.data) < 3 or msg.data[0] < 3:
             return
         lat, lon = float(msg.data[1]), float(msg.data[2])

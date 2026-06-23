@@ -3,7 +3,7 @@ import threading
 
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import Float32, Float32MultiArray, String
+from std_msgs.msg import Float32, Float32MultiArray, Float64MultiArray, String
 
 
 class USVStateNode(Node):
@@ -24,7 +24,7 @@ class USVStateNode(Node):
             'last_update': None,
         }
 
-        self.create_subscription(Float32MultiArray, 'gps', self.on_gps, 10)
+        self.create_subscription(Float64MultiArray, 'gps', self.on_gps, 10)
         self.create_subscription(Float32MultiArray, 'location', self.on_location, 10)
         self.create_subscription(Float32, 'tension', self.on_tension, 10)
         self.create_subscription(Float32, 'encoder_angle', self.on_encoder, 10)
@@ -42,7 +42,7 @@ class USVStateNode(Node):
             self.state[key] = value
             self.state['last_update'] = self.get_clock().now().to_msg().sec + self.get_clock().now().to_msg().nanosec * 1e-9
 
-    def on_gps(self, msg: Float32MultiArray):
+    def on_gps(self, msg: Float64MultiArray):
         self.set_state('gps', list(msg.data))
 
     def on_location(self, msg: Float32MultiArray):

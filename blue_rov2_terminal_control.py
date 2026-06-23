@@ -16,10 +16,33 @@ from pymavlink import mavutil
 DEFAULT_CONNECTION = 'udp:127.0.0.1:14551'
 
 
+def wait_autopilot_heartbeat(master, timeout=30):
+    """Wait for a HEARTBEAT from the real autopilot, not a peripheral service.
+
+    BlueOS mirrors its whole internal MAVLink bus to client endpoints,
+    including HEARTBEATs from non-autopilot services (e.g. the camera
+    manager sends MAV_TYPE_CAMERA / MAV_AUTOPILOT_INVALID). Those must be
+    skipped, or target_system/component (and any ARMED-bit check) can end up
+    pointing at the wrong component instead of the vehicle.
+    """
+    deadline = time.time() + timeout
+    while time.time() < deadline:
+        remaining = max(0.1, deadline - time.time())
+        hb = master.recv_match(type='HEARTBEAT', blocking=True, timeout=remaining)
+        if hb is not None and hb.autopilot != mavutil.mavlink.MAV_AUTOPILOT_INVALID:
+            return hb
+    return None
+
+
 def connect(connection_str=DEFAULT_CONNECTION, timeout=30):
     master = mavutil.mavlink_connection(connection_str)
     print(f"Connecting to vehicle on {connection_str}...")
-    master.wait_heartbeat(timeout=timeout)
+    hb = wait_autopilot_heartbeat(master, timeout=timeout)
+    if hb is None or master.target_system == 0:
+        raise TimeoutError(
+            f"No autopilot HEARTBEAT within {timeout}s on {connection_str} "
+            "(is MAVProxy/ArduSub running and forwarding to this address?)"
+        )
     print(
         "Connected! Heartbeat received from system %u component %u"
         % (master.target_system, master.target_component)
@@ -67,6 +90,43 @@ def arm(master, arm_state=True):
     print("Sent arm command" if arm_state else "Sent disarm command")
 
 
+def arm_and_verify(master, arm_state=True, timeout=5):
+    """Send an arm/disarm command and report whether it actually took effect.
+
+    A HEARTBEAT's ARMED bit alone doesn't say *why* a request was rejected.
+    ArduSub explains rejections (failed pre-arm checks, etc.) via
+    COMMAND_ACK and/or STATUSTEXT messages sent right after the command —
+    this watches for those too instead of discarding them, so a caller can
+    surface the real reason instead of just "didn't arm".
+
+    Returns (confirmed: bool, notes: list[str]).
+    """
+    arm(master, arm_state)
+    notes = []
+    confirmed = False
+    deadline = time.time() + timeout
+    while time.time() < deadline:
+        remaining = max(0.1, deadline - time.time())
+        msg = master.recv_match(type=['HEARTBEAT', 'COMMAND_ACK', 'STATUSTEXT'],
+                                 blocking=True, timeout=remaining)
+        if msg is None:
+            break
+        mtype = msg.get_type()
+        if mtype == 'HEARTBEAT' and msg.autopilot != mavutil.mavlink.MAV_AUTOPILOT_INVALID:
+            armed = bool(msg.base_mode & mavutil.mavlink.MAV_MODE_FLAG_SAFETY_ARMED)
+            if armed == bool(arm_state):
+                confirmed = True
+                break
+        elif mtype == 'COMMAND_ACK' and msg.command == mavutil.mavlink.MAV_CMD_COMPONENT_ARM_DISARM:
+            notes.append(f"COMMAND_ACK result={msg.result}")
+        elif mtype == 'STATUSTEXT':
+            text = msg.text
+            if isinstance(text, bytes):
+                text = text.decode('utf-8', 'ignore')
+            notes.append(f"STATUSTEXT: {text.strip()}")
+    return confirmed, notes
+
+
 def rc_override(master, channels):
     values = []
     for i in range(8):
@@ -83,7 +143,7 @@ def rc_override(master, channels):
     print(f"Sent RC override: {values}")
 
 
-def manual_control(master, x, y, z, r, buttons=0):
+def manual_control(master, x, y, z, r, buttons=0, verbose=True):
     x = int(max(-1000, min(1000, float(x))))
     y = int(max(-1000, min(1000, float(y))))
     z = int(max(-1000, min(1000, float(z))))
@@ -96,7 +156,8 @@ def manual_control(master, x, y, z, r, buttons=0):
         r,
         int(buttons),
     )
-    print(f"Sent MANUAL_CONTROL x={x} y={y} z={z} r={r} buttons={buttons}")
+    if verbose:
+        print(f"Sent MANUAL_CONTROL x={x} y={y} z={z} r={r} buttons={buttons}")
 
 
 def set_depth(master, depth_m):

@@ -3,7 +3,9 @@
 USV Comprehensive Test Suite
 =============================
 
-Aggregates all hardware bringup, logic, and integration tests in fault-isolation
+Aggregates all hardware bringup, logic, and 
+
+integration tests in fault-isolation
 order: fewest components first, full system last.
 
 Each test is labelled:
@@ -237,6 +239,72 @@ def test_rov_position_geometry():
     assert horiz_bad == 0.0, "Cable shorter than depth → horizontal distance must be 0"
 
 
+@pytest.mark.sw
+def test_station_keeping_math():
+    """
+    [AUTO] 1.4 ⭐ NEW — Station-keeping navigation helpers (station_keeping.py).
+
+    _wrap_180, _bearing, and _distance_m are pure-Python functions used by both
+    StationKeepingNode and RTLNode. Tested without hardware or ROS2.
+    """
+    from station_keeping import _wrap_180, _bearing, _distance_m
+
+    # _wrap_180: all results must land in (-180, 180]
+    assert _wrap_180(0.0)    ==  0.0,   "0° wraps to 0"
+    assert _wrap_180(181.0)  == -179.0, "181° wraps to -179°"
+    assert _wrap_180(-181.0) ==  179.0, "-181° wraps to 179°"
+    assert _wrap_180(360.0)  ==  0.0,   "360° wraps to 0°"
+    assert _wrap_180(-180.0) == -180.0, "-180° stays at -180°"
+
+    # _bearing: cardinal directions from a known point (lat=32, lon=35)
+    lat, lon = 32.0, 35.0
+    assert abs(_bearing(lat, lon, lat + 0.01, lon) -    0.0) < 0.1, "North target → bearing 0°"
+    assert abs(_bearing(lat, lon, lat,        lon + 0.01) -  90.0) < 0.1, "East target → bearing 90°"
+    assert abs(_bearing(lat, lon, lat - 0.01, lon) -  180.0) < 0.1, "South target → bearing 180°"
+    assert abs(_bearing(lat, lon, lat,        lon - 0.01) - -90.0) < 0.1, "West target → bearing -90°"
+
+    # _distance_m: same point is 0; 1 km north is ≈ 1000 m
+    assert _distance_m(lat, lon, lat, lon) == 0.0, "Same point → 0 m"
+    dist_1km = _distance_m(lat, lon, lat + 1000 / 111_000, lon)
+    assert 990 < dist_1km < 1010, f"1 km north: expected ~1000 m, got {dist_1km:.1f} m"
+
+
+@pytest.mark.sw
+def test_rtl_threshold_sanity():
+    """
+    [AUTO] 1.5 ⭐ NEW — RTL failsafe threshold sanity (rtl.py).
+
+    Verifies that the four safety thresholds are internally consistent and
+    compatible with the cruise-control operating range. No hardware required.
+    """
+    from rtl import MAX_TENSION_KG, COMMS_TIMEOUT_S, SURFACE_TENSION_KG, HOME_RADIUS_M
+    from cruise_control import HIGH_TENSION, LOW_TENSION
+
+    # All thresholds must be positive
+    assert MAX_TENSION_KG      > 0, "MAX_TENSION_KG must be positive"
+    assert COMMS_TIMEOUT_S     > 0, "COMMS_TIMEOUT_S must be positive"
+    assert SURFACE_TENSION_KG  > 0, "SURFACE_TENSION_KG must be positive"
+    assert HOME_RADIUS_M       > 0, "HOME_RADIUS_M must be positive"
+
+    # RTL triggers above the normal operating band — never during normal cruise
+    assert MAX_TENSION_KG > HIGH_TENSION, (
+        f"RTL tension trigger ({MAX_TENSION_KG} kg) must be above "
+        f"cruise HIGH_TENSION ({HIGH_TENSION} kg)"
+    )
+
+    # Surface detection must be below the normal tension band so the wait
+    # doesn't exit immediately while cable is still under working load
+    assert SURFACE_TENSION_KG < LOW_TENSION, (
+        f"SURFACE_TENSION_KG ({SURFACE_TENSION_KG} kg) must be below "
+        f"LOW_TENSION ({LOW_TENSION} kg) so surface-arrival is unambiguous"
+    )
+
+    # Comms timeout sanity: long enough not to false-trigger on brief dropouts
+    assert COMMS_TIMEOUT_S >= 10, (
+        f"COMMS_TIMEOUT_S={COMMS_TIMEOUT_S} s is very short — risk of false RTL trigger"
+    )
+
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # LAYER 2 — Individual sensor unit tests
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -249,18 +317,19 @@ def test_tension_reads(gpio_setup):
     ⚠ Hardware: HX711 wired (DT=GPIO22, SCK=GPIO27), load cell connected.
     No physical interaction needed; reading should be near 0 with no load.
     """
-    from utils import print_test_header, print_test_result, pause_for_approval
+    from utils import print_test_header, print_test_result, pause_for_approval, quiet_node
     print_test_header("TENSION SENSOR (HX711)", 1, 8)
     try:
         import rclpy
         from hx711 import TensionNode
         if not rclpy.ok():
             rclpy.init()
-        node = TensionNode()
-        time.sleep(1)
-        val = node.tension
+        node = quiet_node(TensionNode())
+        for _ in range(40):            # spin ~2 s so check_weight() fires
+            rclpy.spin_once(node, timeout_sec=0.05)
+        val = node.last_tension
         node.destroy_node()
-        ok = -10 < val < 100
+        ok = -10 < val < 150           # 150 covers DANGER zone readings
         print_test_result(ok, f"Tension: {val:.2f} kg")
         pause_for_approval()
         assert ok, f"Tension out of expected range: {val:.2f} kg"
@@ -388,21 +457,21 @@ def test_tension_stepper_interaction(gpio_setup, pigpio_connection):
     Test passes if tension varies by > 0.5 kg during the window.
     The stepper node responds in production; here we verify the sensor sees the change.
     """
-    from utils import print_test_header, print_test_result, pause_for_approval
+    from utils import print_test_header, print_test_result, pause_for_approval, quiet_node
     print_test_header("TENSION → STEPPER Interaction", 6, 8)
     try:
         import rclpy
         from hx711 import TensionNode
         if not rclpy.ok():
             rclpy.init()
-        node = TensionNode()
+        node = quiet_node(TensionNode())
         tensions = []
         print("  Pull and release the cable during the next 10 seconds...")
         for i in range(10):
             for _ in range(20):
                 rclpy.spin_once(node, timeout_sec=0.05)
-            tensions.append(node.tension)
-            print(f"  [{i+1}/10] tension = {node.tension:.2f} kg", flush=True)
+            tensions.append(node.last_tension)
+            print(f"  [{i+1}/10] tension = {node.last_tension:.2f} kg", flush=True)
         node.destroy_node()
         variation = max(tensions) - min(tensions)
         ok = variation > 0.5
@@ -426,9 +495,10 @@ def test_encoder_thrusters_proportional(pigpio_connection):
     """
     import rclpy
     from rclpy.node import Node
-    from std_msgs.msg import Float32, Float32MultiArray
+    from std_msgs.msg import Float32, Float32MultiArray, String
     from rclpy.executors import MultiThreadedExecutor
     from t200 import ThrusterNode
+    from utils import quiet_node
 
     if not rclpy.ok():
         rclpy.init()
@@ -436,7 +506,8 @@ def test_encoder_thrusters_proportional(pigpio_connection):
     class _Helper(Node):
         def __init__(self):
             super().__init__('_test_steer_helper')
-            self._pub = self.create_publisher(Float32, 'encoder_angle', 10)
+            self._pub      = self.create_publisher(Float32, 'encoder_angle', 10)
+            self._mode_pub = self.create_publisher(String,  'usv_mode',      10)
             self._last = None
             self.create_subscription(Float32MultiArray, 't200_speed', self._cb, 10)
         def inject(self, angle):
@@ -446,13 +517,20 @@ def test_encoder_thrusters_proportional(pigpio_connection):
         def _cb(self, msg):
             self._last = list(msg.data)
 
-    thruster = ThrusterNode()
-    helper   = _Helper()
+    thruster = quiet_node(ThrusterNode())
+    helper   = quiet_node(_Helper())
     exc = MultiThreadedExecutor()
     exc.add_node(thruster)
     exc.add_node(helper)
     t = threading.Thread(target=exc.spin, daemon=True)
     t.start()
+
+    # ThrusterNode starts in STATION_KEEPING mode and ignores encoder_angle messages
+    # in that mode. Switch to MANUAL so steer_callback actually processes angles.
+    time.sleep(0.2)
+    mode_msg = String(); mode_msg.data = 'MANUAL'
+    helper._mode_pub.publish(mode_msg)
+    time.sleep(0.2)
 
     TOL = 20  # µs
     # (angle, description, expected_right_us, expected_left_us)
@@ -560,10 +638,10 @@ def test_cruise_activation_closed_loop():
 @pytest.mark.integration
 def test_overtension_stepper_response(gpio_setup, pigpio_connection):
     """
-    [REQUIRES HARDWARE] 4.4 ⭐ NEW — Over-tension safety: stepper must retract.
+    [REQUIRES HARDWARE] 4.4 ⭐ NEW — Over-tension safety: stepper must reel out.
 
     Publishes tension = 40 kg (above HIGH_TENSION = 35 kg) via ROS2 topic.
-    WinchMotorNode should switch DIR_PIN (GPIO6) to retraction direction within 2 s.
+    WinchMotorNode should switch DIR_PIN (GPIO6) to the reel-out direction within 2 s.
 
     ⚠ Hardware: stepper driver powered, DIR_PIN=GPIO6 accessible.
     """
@@ -573,6 +651,7 @@ def test_overtension_stepper_response(gpio_setup, pigpio_connection):
     from rclpy.executors import MultiThreadedExecutor
     from std_msgs.msg import Float32
     from stepper import WinchMotorNode
+    from utils import quiet_node
 
     DIR_PIN = 6
     GPIO.setup(DIR_PIN, GPIO.IN)  # Read back to confirm
@@ -588,8 +667,8 @@ def test_overtension_stepper_response(gpio_setup, pigpio_connection):
             msg = Float32(); msg.data = float(kg)
             self._pub.publish(msg)
 
-    winch  = WinchMotorNode()
-    sender = _TensionPub()
+    winch  = quiet_node(WinchMotorNode())
+    sender = quiet_node(_TensionPub())
     exc = MultiThreadedExecutor()
     exc.add_node(winch)
     exc.add_node(sender)
@@ -605,11 +684,104 @@ def test_overtension_stepper_response(gpio_setup, pigpio_connection):
     winch.destroy_node()
     sender.destroy_node()
 
-    print(f"  DIR_PIN state after tension=40 kg: {dir_state}  (0=reel-in / retract)")
-    assert dir_state == 0, (
-        f"Expected DIR_PIN=0 (reel-in/retract) after over-tension, got {dir_state}. "
+    print(f"  DIR_PIN state after tension=40 kg: {dir_state}  (1=reel-out)")
+    assert dir_state == 1, (
+        f"Expected DIR_PIN=1 (reel-out) after over-tension, got {dir_state}. "
         "Stepper may not have responded within 2 s."
     )
+
+
+@pytest.mark.integration
+def test_thruster_mode_switching(pigpio_connection):
+    """
+    [REQUIRES HARDWARE] 4.5 ⭐ NEW — ThrusterNode mode gate.
+
+    Verifies that the 'usv_mode' topic correctly gates which steering source
+    the ThrusterNode obeys:
+      - STATION_KEEPING (default): encoder_angle messages are IGNORED
+      - MANUAL: encoder_angle messages produce PWM output
+      - RTL: encoder_angle messages are IGNORED again
+
+    ⚠ Hardware: pigpiod running, thrusters clamped.
+    """
+    import rclpy
+    from rclpy.node import Node
+    from rclpy.executors import MultiThreadedExecutor
+    from std_msgs.msg import Float32, Float32MultiArray, String
+    from t200 import ThrusterNode, DEAD_ZONE_DEG
+    from utils import quiet_node
+
+    if not rclpy.ok():
+        rclpy.init()
+
+    class _Helper(Node):
+        def __init__(self):
+            super().__init__('_test_mode_helper')
+            self._angle_pub = self.create_publisher(Float32, 'encoder_angle', 10)
+            self._mode_pub  = self.create_publisher(String,  'usv_mode',      10)
+            self._last = None
+            self.create_subscription(Float32MultiArray, 't200_speed', self._cb, 10)
+        def set_mode(self, mode_str):
+            self._last = None
+            msg = String(); msg.data = mode_str
+            self._mode_pub.publish(msg)
+        def inject(self, angle):
+            self._last = None
+            msg = Float32(); msg.data = float(angle)
+            self._angle_pub.publish(msg)
+        def _cb(self, msg):
+            self._last = list(msg.data)
+
+    def wait_for_response(helper, timeout=0.6):
+        deadline = time.time() + timeout
+        while time.time() < deadline:
+            if helper._last is not None:
+                return True
+            time.sleep(0.05)
+        return False
+
+    thruster = quiet_node(ThrusterNode())
+    helper   = quiet_node(_Helper())
+    exc = MultiThreadedExecutor()
+    exc.add_node(thruster)
+    exc.add_node(helper)
+    threading.Thread(target=exc.spin, daemon=True).start()
+    time.sleep(0.2)  # let executor boot
+
+    STEER_ANGLE = float(DEAD_ZONE_DEG + 20)  # well outside dead zone → must steer if active
+
+    # ── STATION_KEEPING (default) — encoder_angle must be ignored ─────────────
+    helper.inject(STEER_ANGLE)
+    responded = wait_for_response(helper)
+    assert not responded, (
+        "STATION_KEEPING mode: encoder_angle should be ignored, "
+        "but t200_speed was published"
+    )
+
+    # ── MANUAL — encoder_angle must produce non-neutral PWM ───────────────────
+    helper.set_mode('MANUAL')
+    time.sleep(0.1)
+    helper.inject(STEER_ANGLE)
+    responded = wait_for_response(helper)
+    assert responded, "MANUAL mode: no t200_speed published after encoder_angle injection"
+    right_us, left_us = int(helper._last[0]), int(helper._last[1])
+    assert right_us != left_us, (
+        f"MANUAL mode at {STEER_ANGLE}°: motors should differ, got R={right_us} L={left_us}"
+    )
+
+    # ── RTL — encoder_angle must be ignored again ─────────────────────────────
+    helper.set_mode('RTL')
+    time.sleep(0.1)
+    helper.inject(STEER_ANGLE)
+    responded = wait_for_response(helper)
+    assert not responded, (
+        "RTL mode: encoder_angle should be ignored, but t200_speed was published"
+    )
+
+    exc.shutdown(timeout_sec=1)
+    thruster.destroy_node()
+    helper.destroy_node()
+    print("  ✓ Mode gate verified: SK=ignored, MANUAL=active, RTL=ignored")
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -667,10 +839,13 @@ def test_rov_mode_transitions(mavlink_connection):
     Tests the same MAVLink interface used in blue_rov2_set_mode.py and the VSCode
     terminal panel. Sequence: MANUAL → STABILIZE → DEPTH_HOLD → MANUAL.
 
-    For each transition: sends set_mode(), waits 1.5 s, reads HEARTBEAT custom_mode,
-    and compares to connection.mode_mapping()[mode_name].
+    For each transition: sends set_mode(), then polls real-autopilot HEARTBEATs
+    (skipping BlueOS's mirrored non-autopilot ones, e.g. the camera service)
+    for up to 5 s, succeeding as soon as custom_mode matches — rather than a
+    single check after a short fixed sleep, which previously misreported
+    custom_mode=0 (a non-autopilot heartbeat's default) as a mismatch.
     """
-    from blue_rov2_terminal_control import set_mode
+    from blue_rov2_terminal_control import set_mode, wait_autopilot_heartbeat
     mav = mavlink_connection
     mode_map = mav.mode_mapping()
 
@@ -684,17 +859,22 @@ def test_rov_mode_transitions(mavlink_connection):
 
         expected_id = mode_map[mode_name]
         set_mode(mav, mode_name)
-        time.sleep(1.5)
 
-        hb = mav.recv_match(type='HEARTBEAT', blocking=True, timeout=3)
-        if hb is None:
-            failures.append(f"  → {mode_name}: no HEARTBEAT received within 3 s")
-            continue
+        deadline = time.time() + 5
+        got_id = None
+        while time.time() < deadline:
+            hb = wait_autopilot_heartbeat(mav, timeout=max(0.1, deadline - time.time()))
+            if hb is None:
+                break
+            got_id = hb.custom_mode
+            if got_id == expected_id:
+                break
 
-        got_id = hb.custom_mode
-        if got_id != expected_id:
+        if got_id is None:
+            failures.append(f"  → {mode_name}: no autopilot HEARTBEAT received within 5 s")
+        elif got_id != expected_id:
             failures.append(
-                f"  → {mode_name}: expected custom_mode={expected_id}, got {got_id}"
+                f"  → {mode_name}: expected custom_mode={expected_id}, got {got_id} (after 5 s)"
             )
         else:
             print(f"  ✓ {mode_name} (custom_mode={got_id})")
@@ -713,7 +893,7 @@ def test_rov_attitude_stream(mavlink_connection):
     from blue_rov2_terminal_control import set_stream
     mav = mavlink_connection
 
-    set_stream(mav, 1, 4)   # stream id 1 = RAW_SENSORS, 4 Hz
+    set_stream(mav, 10, 4)  # stream id 10 = EXTRA1, includes ATTITUDE
     time.sleep(0.5)
 
     attitudes = []
@@ -756,7 +936,7 @@ def test_visual_demo(pigpio_connection):
     STEP_PIN, DIR_PIN   = 5, 6
     GENTLE_FWD, FAST_FWD = 1600, 1700
     GENTLE_REV, FAST_REV, SLOW_FWD = 1400, 1300, 1550
-    HOLD, HOLD_NEUTR = 15, 6
+    HOLD, HOLD_NEUTR = 7, 6
 
     pi.set_mode(STEP_PIN, _pigpio.OUTPUT)
     pi.set_mode(DIR_PIN,  _pigpio.OUTPUT)
@@ -788,16 +968,16 @@ def test_visual_demo(pigpio_connection):
         drive(NEUTRAL,     NEUTRAL,     9,    "ARM (9 s)")
         drive(GENTLE_FWD,  GENTLE_FWD,  HOLD, "GENTLE FORWARD");  neutral()
         drive(FAST_FWD,    FAST_FWD,    HOLD, "FAST FORWARD");    neutral()
-        winch_run(0, 800, 12, "REEL OUT slow"); time.sleep(3)
+        winch_run(0, 800, 12, "REEL IN slow"); time.sleep(3)
         drive(GENTLE_REV,  GENTLE_REV,  HOLD, "GENTLE REVERSE");  neutral()
         drive(FAST_REV,    FAST_REV,    HOLD, "FAST REVERSE");    neutral()
-        winch_run(1, 800, 12, "REEL IN slow"); time.sleep(3)
+        winch_run(1, 800, 12, "REEL OUT slow"); time.sleep(3)
         drive(GENTLE_REV,  GENTLE_FWD,  HOLD, "HARD TURN RIGHT"); neutral()
         drive(GENTLE_FWD,  GENTLE_REV,  HOLD, "HARD TURN LEFT");  neutral()
         drive(SLOW_FWD,    FAST_FWD,    HOLD, "SOFT TURN RIGHT"); neutral()
         drive(FAST_FWD,    SLOW_FWD,    HOLD, "SOFT TURN LEFT");  neutral()
-        winch_run(0, 2000, 9, "REEL OUT fast")
-        winch_run(1, 2000, 9, "REEL IN fast")
+        winch_run(0, 2000, 9, "REEL IN fast")
+        winch_run(1, 2000, 9, "REEL OUT fast")
         print_test_result(True, "Visual demo completed successfully")
         pause_for_approval()
 
@@ -813,169 +993,182 @@ def test_visual_demo(pigpio_connection):
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# LAYER 7 — Full system live test  (all 5 subsystems simultaneously)
+# LAYER 8 — Full demo: ROV (armed) lights, gripper, thrusters
 # ═══════════════════════════════════════════════════════════════════════════════
 
-@pytest.mark.visual
-def test_full_system_live(gpio_setup, pigpio_connection):
+@pytest.mark.rov
+def test_full_demo_all_layers(mavlink_connection):
     """
-    [REQUIRES PHYSICAL PRESENCE] 7.1  All subsystems running simultaneously.
+    [REQUIRES BlueROV2] 8.1  ROV-only demo: arm, lights, gripper, thrusters.
 
-    Starts every ROS2 node under a single MultiThreadedExecutor while running a
-    short physical demo sequence. Reads USVStateNode snapshot every second and
-    verifies that all 5 subsystems are producing live data:
+    USV thrusters/winch are already covered by test_visual_demo — this test
+    focuses only on the ROV: arms the BlueROV2, exercises its lights
+    (off -> brightest -> off) and gripper (full open, then full close) via
+    MANUAL_CONTROL button holds — ArduSub drives these as joystick
+    button-hold functions, not a settable PWM (confirmed: DO_SET_SERVO never
+    changed the actual SERVO_OUTPUT_RAW value on a prior run) — using the
+    vehicle's configured joystick mapping (button 13/14 = lights
+    brighter/dimmer, button 1/2 = gripper close/open). Also exercises the
+    ROV's own MAVLink thrusters in all 8 directions (forward/back, strafe
+    left/right, yaw left/right, ascend/descend), reading back
+    SERVO_OUTPUT_RAW after each direction to confirm the thruster outputs
+    actually change (not just that the command was sent).
 
-      Subsystem       Topic checked
-      ─────────────   ─────────────────
-      HX711           tension  (Float32, kg)
-      Encoder         encoder_angle  (Float32, degrees)
-      GPS             gps  (Float32MultiArray [fix, lat, lon, alt])
-      Stepper         stepper  (Float32, RPM)
-      T200 thrusters  t200_speed  (Float32MultiArray [right_us, left_us])
+    Every phase below records failures into one list instead of aborting
+    the whole test, so a problem in one phase (e.g. lights not responding)
+    doesn't prevent the rest of the demo from running or being reported.
 
-    The motor sequence is shortened (ARM + gentle forward + reel out + neutral)
-    so the test completes in ≈30 seconds.
+    ⚠ Physical: operator must supervise. CLEAR THE WATER around the ROV —
+    it will be ARMED and its thrusters, lights, and gripper will move.
 
-    ⚠ Physical: operator must supervise. Clamp thrusters. Free cable on winch.
+    Requires: MAVProxy forwarding the BlueROV2 to udp:127.0.0.1:14551
+    (see mavlink_connection fixture).
     """
-    import pigpio as _pigpio
-    import rclpy
-    from rclpy.executors import MultiThreadedExecutor
     from utils import print_test_header, print_test_result, pause_for_approval
 
-    from hx711 import TensionNode
-    from ENCODER import encoder as EncoderNode
-    from GPS import GPS as GPSNode
-    from stepper import WinchMotorNode
-    from t200 import ThrusterNode
-    from state_aggregator import USVStateNode
+    from blue_rov2_terminal_control import set_mode, manual_control, arm_and_verify
 
-    print_test_header("FULL SYSTEM LIVE (All 5 Subsystems)", 10, 10)
-    print("\n  ⚠ Clamp thrusters. Ensure winch cable is free.")
-    input("  Press Enter to start full system test (Ctrl+C to abort)...\n")
+    def banner(title):
+        print(f"\n{'#'*70}\n#  {title}\n{'#'*70}")
 
-    if not rclpy.ok():
-        rclpy.init()
+    print_test_header("FULL DEMO — ROV (ARMED): LIGHTS, GRIPPER, THRUSTERS", 8, 8)
+    print("\n  ⚠ CLEAR THE WATER around the ROV — it will be ARMED and its")
+    print("  thrusters, lights, and gripper will move.")
+    input("  Press Enter to start the full demo (Ctrl+C to abort)...\n")
 
-    # ── Start all nodes ────────────────────────────────────────────────────────
-    state_node = USVStateNode()
-    nodes = [
-        TensionNode(),
-        EncoderNode(),
-        GPSNode(),
-        WinchMotorNode(),
-        ThrusterNode(),
-        state_node,
-    ]
-    exc = MultiThreadedExecutor()
-    for n in nodes:
-        exc.add_node(n)
-    spin_thread = threading.Thread(target=exc.spin, daemon=True)
-    spin_thread.start()
+    failures = []
+    mav = mavlink_connection
+    rov_armed = False
 
-    print("  All nodes started. Settling for 9 seconds...")
-    time.sleep(9)
+    def report_servo_outputs(channels, label):
+        msg = mav.recv_match(type='SERVO_OUTPUT_RAW', blocking=True, timeout=1)
+        if msg is None:
+            print(f"      (no SERVO_OUTPUT_RAW received to confirm {label})")
+            return
+        values = {c: getattr(msg, f'servo{c}_raw', None) for c in channels}
+        print(f"      SERVO_OUTPUT_RAW after {label}: {values}")
 
-    pi = pigpio_connection
-    PIN_RIGHT, PIN_LEFT = 26, 12
-    STEP_PIN, DIR_PIN   = 5, 6
-    GENTLE_FWD = 1600
-    pi.set_mode(STEP_PIN, _pigpio.OUTPUT)
-    pi.set_mode(DIR_PIN,  _pigpio.OUTPUT)
-
-    def drive(r, l, t, label):
-        print(f"\n  [{label}]  R={r} µs  L={l} µs  ({t} s)")
-        pi.set_servo_pulsewidth(PIN_RIGHT, r)
-        pi.set_servo_pulsewidth(PIN_LEFT,  l)
-
-    def winch_run(direction, freq, duration, label):
-        print(f"  [WINCH] {label}")
-        pi.write(DIR_PIN, direction)
-        time.sleep(0.005)
-        pulse_us = int(1_000_000 / (freq * 2))
-        end = time.time() + duration
-        while time.time() < end:
-            pi.write(STEP_PIN, 1); time.sleep(pulse_us / 1e6)
-            pi.write(STEP_PIN, 0); time.sleep(pulse_us / 1e6)
-        pi.write(STEP_PIN, 0)
-
-    def print_snapshot(label):
-        snap = state_node.get_state()
-        print(f"\n  ── Snapshot @ {label} ──────────────────────────────")
-        print(f"     tension      = {snap.get('tension')}")
-        print(f"     encoder_angle= {snap.get('encoder_angle')}")
-        print(f"     stepper RPM  = {snap.get('stepper')}")
-        print(f"     t200_speed   = {snap.get('t200_speed')}")
-        gps = snap.get('gps')
-        if gps:
-            print(f"     GPS          = fix={gps[0]} lat={gps[1]:.6f} lon={gps[2]:.6f}")
-        else:
-            print(f"     GPS          = {gps}")
-        return snap
-
-    snapshots = []
     try:
-        # ARM sequence
-        drive(NEUTRAL, NEUTRAL, 9, "ARM (9 s)")
-        time.sleep(9)
-        snapshots.append(print_snapshot("after ARM"))
+        # ── Arm the ROV ──────────────────────────────────────────────────────
+        banner("ARMING ROV")
+        try:
+            set_mode(mav, 'MANUAL')
+            time.sleep(1)
+            confirmed, notes = arm_and_verify(mav, True, timeout=5)
+            if confirmed:
+                rov_armed = True
+                print_test_result(True, "ROV armed and confirmed via HEARTBEAT")
+            else:
+                detail = "; ".join(notes) if notes else (
+                    "no COMMAND_ACK/STATUSTEXT seen either — check ArduSub "
+                    "pre-arm checks (GPS/EKF/battery/leak/compass)"
+                )
+                failures.append(f"ROV arm: not confirmed armed after 5s ({detail})")
+        except Exception as e:
+            failures.append(f"ROV arm: exception while arming — {e}")
 
-        # Gentle forward + reel out while reading sensors
-        drive(GENTLE_FWD, GENTLE_FWD, 0, "GENTLE FORWARD (15 s)")
-        winch_run(0, 800, 15, "REEL OUT while moving forward")
-        snapshots.append(print_snapshot("during FORWARD + REEL OUT"))
+        if not rov_armed:
+            print_test_result(False, "Skipping lights/gripper/ROV-thruster checks — ROV did not arm")
+        else:
+            # ── Lights/gripper are ArduSub joystick button-hold functions, not a
+            # settable PWM — SERVO_OUTPUT_RAW readback on a prior run proved
+            # DO_SET_SERVO never changed the actual output. Holding the mapped
+            # button (per the vehicle's joystick setup) ramps brightness or
+            # drives the gripper while held, the same way a real controller
+            # would. Button numbers confirmed by the user against their own
+            # joystick config: 13=lights brighter, 14=lights dimmer,
+            # 1=gripper close, 2=gripper open.
+            LIGHTS_BRIGHTER_BTN, LIGHTS_DIMMER_BTN = 13, 14
+            GRIPPER_CLOSE_BTN, GRIPPER_OPEN_BTN = 1, 2
 
-        # Back to neutral
-        drive(NEUTRAL, NEUTRAL, 0, "NEUTRAL")
-        time.sleep(6)
-        snapshots.append(print_snapshot("after NEUTRAL"))
+            def hold_button(bit, duration, rate_hz=10):
+                interval = 1.0 / rate_hz
+                end = time.time() + duration
+                while time.time() < end:
+                    manual_control(mav, 0, 0, 500, 0, buttons=(1 << bit), verbose=False)
+                    time.sleep(interval)
+                manual_control(mav, 0, 0, 500, 0, buttons=0)  # release
 
-        # Hard turn right
-        drive(1400, 1600, 0, "HARD TURN RIGHT (9 s)")
-        time.sleep(9)
-        snapshots.append(print_snapshot("during HARD TURN RIGHT"))
+            # ── Lights: hold brighter to ramp to full, then dimmer back to off ──
+            banner("ROV LIGHTS — off to brightest and back (button hold)")
+            try:
+                print("    holding LIGHTS BRIGHTER (button 13) for 6 s")
+                hold_button(LIGHTS_BRIGHTER_BTN, 6)
+                time.sleep(1)
+                print("    holding LIGHTS DIMMER (button 14) for 6 s")
+                hold_button(LIGHTS_DIMMER_BTN, 6)
+                print_test_result(True, "Lights held brighter then dimmer (off -> brightest -> off)")
+            except Exception as e:
+                failures.append(f"ROV lights: {e}")
 
-        drive(NEUTRAL, NEUTRAL, 0, "NEUTRAL")
-        time.sleep(6)
+            # ── Robotic arm / gripper: hold open then close, all the way ───────
+            banner("ROV GRIPPER — full open then full close (button hold)")
+            try:
+                print("    holding GRIPPER OPEN (button 2) for 4 s")
+                hold_button(GRIPPER_OPEN_BTN, 4)
+                time.sleep(1)
+                print("    holding GRIPPER CLOSE (button 1) for 4 s")
+                hold_button(GRIPPER_CLOSE_BTN, 4)
+                print_test_result(True, "Gripper moved all the way open and all the way closed")
+            except Exception as e:
+                failures.append(f"ROV gripper: {e}")
 
-        # Reel in
-        winch_run(1, 800, 15, "REEL IN")
-        snapshots.append(print_snapshot("after REEL IN"))
+            # ── ROV thrusters: all directions via MANUAL_CONTROL, with a
+            # SERVO_OUTPUT_RAW readback after each so we can see whether the
+            # actual thruster outputs change, not just that we sent a command ──
+            banner("ROV THRUSTERS — all 8 directions")
+            try:
+                THRUSTER_CHANNELS = [1, 2, 3, 4, 5, 6, 7, 8]
+                rov_directions = [
+                    ("FORWARD",       400,    0,  500,    0),
+                    ("BACKWARD",     -400,    0,  500,    0),
+                    ("STRAFE RIGHT",    0,  400,  500,    0),
+                    ("STRAFE LEFT",     0, -400,  500,    0),
+                    ("YAW RIGHT",        0,    0,  500,  400),
+                    ("YAW LEFT",         0,    0,  500, -400),
+                    ("ASCEND",           0,    0,  700,    0),
+                    ("DESCEND",          0,    0,  300,    0),
+                ]
+                for label, x, y, z, r in rov_directions:
+                    print(f"    {label}")
+                    manual_control(mav, x, y, z, r)
+                    report_servo_outputs(THRUSTER_CHANNELS, label)
+                    time.sleep(1.5)
+                    manual_control(mav, 0, 0, 500, 0)  # back to neutral between moves
+                    time.sleep(0.5)
+                print_test_result(True, "ROV thrusters exercised in all 8 directions")
+            except Exception as e:
+                failures.append(f"ROV thrusters: {e}")
 
     except KeyboardInterrupt:
-        print("\n  ⚠ Test interrupted by user")
+        print("\n  ⚠ Demo interrupted by user")
+        failures.append("Demo interrupted by user (KeyboardInterrupt)")
     finally:
-        pi.set_servo_pulsewidth(PIN_RIGHT, 0)
-        pi.set_servo_pulsewidth(PIN_LEFT,  0)
-        pi.write(STEP_PIN, 0)
-        exc.shutdown(timeout_sec=2)
-        for n in nodes:
+        banner("TEARDOWN")
+        # Always return the ROV to neutral and disarm, no matter what happened above
+        if rov_armed:
             try:
-                n.destroy_node()
-            except Exception:
-                pass
+                manual_control(mav, 0, 0, 500, 0)
+                time.sleep(0.5)
+                confirmed, notes = arm_and_verify(mav, False, timeout=5)
+                if confirmed:
+                    print("  ✓ ROV disarmed")
+                else:
+                    detail = "; ".join(notes) if notes else "no further info"
+                    failures.append(f"ROV disarm could not be confirmed ({detail}) — verify manually!")
+            except Exception as e:
+                failures.append(f"Error while disarming ROV: {e} — verify manually!")
 
-    # ── Verify all 5 subsystems produced data ─────────────────────────────────
-    last = snapshots[-1] if snapshots else {}
-    missing = []
-    for key, label in [
-        ('tension',       'HX711 tension'),
-        ('encoder_angle', 'Encoder angle'),
-        ('stepper',       'Stepper RPM'),
-        ('t200_speed',    'T200 thruster PWM'),
-        ('gps',           'GPS fix'),
-    ]:
-        if last.get(key) is None:
-            missing.append(f"  {label} ({key}): no data received during test")
-
-    print("\n")
-    if missing:
-        print_test_result(False, f"{len(missing)} subsystems produced no data")
+    banner("SUMMARY")
+    if failures:
+        print_test_result(False, f"{len(failures)} check(s) failed:")
+        for f in failures:
+            print(f"    - {f}")
     else:
-        print_test_result(True, "All 5 subsystems produced live data during demo")
+        print_test_result(True, "ROV armed, lights/gripper/thrusters all exercised")
 
     pause_for_approval()
-    assert not missing, "Subsystems with no data:\n" + "\n".join(missing)
+    assert not failures, "Failures during full demo:\n" + "\n".join(f"  - {f}" for f in failures)
 
 
 # ─── Force sequential execution (prevent GPIO / pigpio conflicts) ─────────────

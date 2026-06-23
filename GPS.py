@@ -1,6 +1,8 @@
 import rclpy
 from rclpy.node import Node
+from std_msgs.msg import Float64MultiArray
 from std_msgs.msg import Float32MultiArray
+
 import serial
 from pyubx2 import UBXReader, UBXMessage
 
@@ -28,15 +30,15 @@ class GPS(Node):
         try:
             raw_data, msg = self.ubr.read()
             if msg and hasattr(msg, 'identity') and msg.identity == 'NAV-PVT':
-                # Divide by 10000000.0 to convert raw integer to standard degrees
-                lat = msg.lat / 10000000.0
-                lon = msg.lon / 10000000.0
+                # pyubx2 already applies NAV-PVT's 1e-07 scale factor for lat/lon,
+                # so msg.lat/msg.lon are already in degrees — do not divide again.
+                lat = msg.lat
+                lon = msg.lon
                 alt = msg.height / 1000.0
                 fix = msg.fixType
                 
                 # Publish data to ROS2 topic
                 self.publisher_.publish(Float32MultiArray(data=[float(fix), float(lat), float(lon), float(alt)]))
-
         except Exception as e:
             self.get_logger().warn(f"Error reading GPS: {e}")
 

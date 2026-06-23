@@ -23,8 +23,8 @@ class GPS(Node):
         self.stream.write(set_msg.serialize())
 
         # Network connection setup to laptop (clean antenna network)
-        self.laptop_ip = '10.0.0.1'
-        self.udp_port = 14401
+        self.laptop_ip = '192.168.2.1'
+        self.udp_port = 14451
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
         # Timer to periodically poll the GPS

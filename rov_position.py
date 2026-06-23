@@ -4,7 +4,7 @@ import threading
 
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import Float32, Float32MultiArray
+from std_msgs.msg import Float32, Float32MultiArray, Float64MultiArray
 
 # Physical spool constants (identical to follower.py and display_new.py)
 _SPOOL_CORE_RADIUS = 0.095    # metres
@@ -70,7 +70,7 @@ class ROVPositionNode(Node):
         self._rov_heading_rad: float = 0.0  # magnetic bearing from MAVLink, NED radians
 
         # Subscriptions
-        self.create_subscription(Float32MultiArray, 'gps',     self._on_gps,     10)
+        self.create_subscription(Float64MultiArray, 'gps',     self._on_gps,     10)
         self.create_subscription(Float32,           'stepper', self._on_stepper, 10)
         self.create_subscription(Float32,           'subm',    self._on_depth,   10)
 
@@ -98,7 +98,7 @@ class ROVPositionNode(Node):
     # ROS callbacks                                                        #
     # ------------------------------------------------------------------ #
 
-    def _on_gps(self, msg: Float32MultiArray):
+    def _on_gps(self, msg: Float64MultiArray):
         fix, lat, lon, _alt = msg.data
         if fix >= 3 and lat != 0.0:
             self._usv_lat = float(lat)

@@ -20,6 +20,7 @@ class TensionNode(Node):
         self.danger_array = []
         self.diff = []
         self.tension = 0
+        self.last_tension = 0.0
         self.filtered_val = 0.0
         self.danger_time = time.time()
         # Important to know if its safe to start the whole system
@@ -74,7 +75,7 @@ class TensionNode(Node):
         return count
 
     def scale_value(self, raw):
-        return -raw / self.calibration_factor
+        return raw / self.calibration_factor
 
     def calibrate(self):
         print("Calibrating...")
@@ -126,6 +127,7 @@ class TensionNode(Node):
                 if len(self.danger_array) >= 4:
                     if time.time() - self.danger_time < 5:
                         self.tension = np.mean(self.danger_array)
+                        self.last_tension = self.tension
                         self.get_logger().warn(f"DANGER! {self.danger_array}")
                         self.danger_array = []
                     else:
@@ -135,6 +137,7 @@ class TensionNode(Node):
                 self.readings.append(scaled)
                 if len(self.readings) >= 5:
                     self.tension = np.mean(self.readings)
+                    self.last_tension = self.tension
             self.diff = self.diff[1:]
 
         if self.tension != 0:
@@ -143,6 +146,19 @@ class TensionNode(Node):
             self.publisher_.publish(msg)
             self.readings = []
             self.tension = 0
+
+    def recalibrate(self, known_kg: float) -> float:
+        """Hang a known weight on the load cell and call this to find the correct factor.
+        Prints the new calibration_factor; update the default in __init__ accordingly.
+        """
+        print(f"Sampling with {known_kg} kg on the load cell ...")
+        raws = [self.read_hx711() for _ in range(100)]
+        mean_raw = sum(raws) / len(raws)
+        new_factor = abs(mean_raw) / known_kg
+        print(f"  mean raw         = {mean_raw:.0f}")
+        print(f"  NEW factor       = {new_factor:.2f}  (was {self.calibration_factor:.2f})")
+        print(f"  Set default:       calibration_factor={new_factor:.2f}")
+        return new_factor
 
     def destroy_node(self):
         super().destroy_node()

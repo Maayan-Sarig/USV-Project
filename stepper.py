@@ -48,7 +48,7 @@ class WinchMotorNode(Node):
         # takes into account the noise of the sensor
         if current_tension < 20:
 
-            self.pi.write(self.dir_pin, 0)  # Forward
+            self.pi.write(self.dir_pin, 0)  # Reel IN (dir_pin=0, confirmed on hardware)
             # makes sure there is a gradual speedup and slowing down for the engine
             if current_tension >= 1:
                 #self.rpm = self.start_motor((20-current_tension)/20, 1)
@@ -60,7 +60,7 @@ class WinchMotorNode(Node):
 
         elif current_tension > self.tension_threshold:
             
-            self.pi.write(self.dir_pin, 1)  # Backward
+            self.pi.write(self.dir_pin, 1)  # Reel OUT (dir_pin=1, confirmed on hardware)
             # makes sure there is a gradual speedup and slowing down for the engine
             if current_tension*2 <= self.max_tension:
                 #self.rpm = self.start_motor((current_tension*2)/self.max_tension, -1)
@@ -153,5 +153,7 @@ class WinchMotorNode(Node):
 
 
     def destroy_node(self):
+        self.stop_motor()
+        self.pi.write(self.step_pin, 0)
         self.pi.stop()
         super().destroy_node()

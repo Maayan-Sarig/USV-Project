@@ -21,8 +21,8 @@ class GPS(Node):
         set_msg = UBXMessage('CFG', 'CFG-RATE', 1, measRate=200, navRate=1, timeRef=0)
         self.stream.write(set_msg.serialize())
 
-        self.laptop_ip = '10.0.0.1'
-        self.udp_port = 14401
+        self.laptop_ip = '192.168.2.2'  # הכתובת של ה-ROV
+        self.udp_port = 27000           # הפורט שנייעד לזה
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
         self.timer = self.create_timer(0.2, self.read_gps_data)
@@ -36,6 +36,7 @@ class GPS(Node):
                 lon_decimal = msg.lon / 1e7 if abs(msg.lon) > 180 else msg.lon
                 alt = msg.height / 1000.0
                 fix = msg.fixType
+                nmea_fix = 1 if fix >= 2 else 0
                 
                 self.publisher_.publish(Float32MultiArray(data=[fix, lat_decimal, lon_decimal, alt]))
 
@@ -48,7 +49,7 @@ class GPS(Node):
                 lon_nmea = f"{int(lon_abs):03d}{(lon_abs % 1 * 60):07.4f}"
                 lon_dir = 'E' if lon_decimal >= 0 else 'W'
                 
-                nmea_sentence = f"GNGGA,120000.00,{lat_nmea},{lat_dir},{lon_nmea},{lon_dir},{fix},08,0.9,{alt:.1f},M,0.0,M,,"
+                nmea_sentence = f"GNGGA,120000.00,{lat_nmea},{lat_dir},{lon_nmea},{lon_dir},{nmea_fix},08,0.9,{alt:.1f},M,0.0,M,,"
                 
                 checksum = 0
                 for char in nmea_sentence:

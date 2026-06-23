@@ -325,7 +325,7 @@ class USVService:
             raise RuntimeError('ROS2 is not available in this environment.')
         rclpy.init()
         self.state_node = USVStateNode()
-        sensor_bridge = USVSensorBridge(udp_host='127.0.0.1', udp_port=14551, send_mavlink=True)
+        sensor_bridge = USVSensorBridge(udp_host='127.0.0.1', udp_port=14551, send_mavlink=True, mav_connection=self.mav)
         rtl_node = RTLNode(mav_connection=self.mav)
         self.ros_nodes = [
             TensionNode(),

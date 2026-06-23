@@ -21,7 +21,7 @@ When within HOLD_RADIUS_M of home: publishes 0.0, 0.0 (winch holds the rest).
 import math
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import Float32, Float32MultiArray, String
+from std_msgs.msg import Float32, Float32MultiArray, Float64MultiArray, String
 
 # ── Tunable parameters ────────────────────────────────────────────────────────
 HOLD_RADIUS_M  = 3.0    # metres — dead zone, no correction inside this radius
@@ -67,7 +67,7 @@ class StationKeepingNode(Node):
         self._track_hdg  = None   # GPS track heading in degrees, None until first movement
 
         # Subscriptions
-        self.create_subscription(Float32MultiArray, 'gps',           self._on_gps,  10)
+        self.create_subscription(Float64MultiArray, 'gps',           self._on_gps,  10)
         self.create_subscription(Float32MultiArray, 'home_position', self._on_home, 10)
         self.create_subscription(String,            'usv_mode',      self._on_mode, 10)
 
@@ -91,7 +91,7 @@ class StationKeepingNode(Node):
                 f'Home position received: {self._home_lat:.6f}, {self._home_lon:.6f}'
             )
 
-    def _on_gps(self, msg: Float32MultiArray):
+    def _on_gps(self, msg: Float64MultiArray):
         if len(msg.data) < 3:
             return
         fix = msg.data[0]

@@ -4,7 +4,7 @@ import math
 from rclpy.node import Node
 from std_msgs.msg import Float32
 import tkinter as tk
-from std_msgs.msg import Float32MultiArray
+from std_msgs.msg import Float32MultiArray, Float64MultiArray
 import subprocess
 
 class Display(Node):
@@ -43,7 +43,7 @@ class Display(Node):
         self.subscription1 = self.create_subscription(Float32, 'tension', self.listener_callback1, 10)
         self.get_logger().info("Subscribed to 'tension'")
 
-        self.subscription4 = self.create_subscription(Float32MultiArray, 'gps', self.update_gps, 10)
+        self.subscription4 = self.create_subscription(Float64MultiArray, 'gps', self.update_gps, 10)
         self.get_logger().info("Subscribed to 'GPS'")
 
         self.subscription2 = self.create_subscription(Float32, 'encoder_angle', self.listener_callback2, 10)
